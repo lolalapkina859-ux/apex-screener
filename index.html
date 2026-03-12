@@ -142,6 +142,12 @@ canvas{display:block;position:absolute;left:0}
 .toast-x{position:absolute;top:8px;right:10px;color:var(--muted);font-size:13px;cursor:pointer;line-height:1}
 .toast-bar{position:absolute;bottom:0;left:0;height:2px;background:var(--accent);animation:tbar 5s linear forwards}
 @keyframes tbar{from{width:100%}to{width:0}}
+
+/* Fullscreen */
+#paneChart:fullscreen{background:var(--bg);display:flex;flex-direction:column}
+#paneChart:-webkit-full-screen{background:var(--bg);display:flex;flex-direction:column}
+#paneChart:fullscreen .cwrap{flex:1}
+#paneChart:-webkit-full-screen .cwrap{flex:1}
 </style>
 </head>
 <body>
@@ -187,6 +193,12 @@ canvas{display:block;position:absolute;left:0}
           <button class="ibtn on" id="bBb"    onclick="tog('bb',this)">BB</button>
           <button class="ibtn on" id="bVol"   onclick="tog('vol',this)">VOL</button>
           <button class="ibtn on" id="bTrail" onclick="tog('trail',this)">TRAIL</button>
+        </div>
+        <div class="tf-row" style="margin-left:auto">
+          <button class="ibtn" id="btnZoomIn"    title="Приблизить">🔍+</button>
+          <button class="ibtn" id="btnZoomOut"   title="Отдалить">🔍−</button>
+          <button class="ibtn" id="btnZoomReset" title="Сбросить зум">⊡</button>
+          <button class="ibtn" id="btnFS"        title="Полный экран">⛶</button>
         </div>
       </div>
       <div class="cwrap">
@@ -649,10 +661,22 @@ function drawMain(){
   const CW=W-PL-PR,CH=H-PT-PB;
   const slot=CW/n,bw=Math.max(1.5,slot*.72-1);
   const cl=cs.map(c=>c.c);
-  // wider padding so TP/SL labels fit and candles always visible
-  const rawMin=Math.min(...cs.map(c=>c.l));
-  const rawMax=Math.max(...cs.map(c=>c.h));
-  const pad=(rawMax-rawMin)*0.18;
+
+  // Compute TP/SL levels for last signal to include in price range
+  const tr0=calcTrail(cs);
+  let tpslMin=Infinity,tpslMax=-Infinity;
+  for(let i=1;i<cs.length;i++){
+    if(tr0[i]==null||tr0[i-1]==null)continue;
+    const buy0=cs[i-1].c<=tr0[i-1]&&cs[i].c>tr0[i];
+    const sell0=cs[i-1].c>=tr0[i-1]&&cs[i].c<tr0[i];
+    if(!buy0&&!sell0)continue;
+    const ep0=cs[i].c,mult0=buy0?1:-1;
+    TP.forEach(t=>{const p=ep0*(1+mult0*t/100);tpslMin=Math.min(tpslMin,p);tpslMax=Math.max(tpslMax,p);});
+    const slp=ep0*(1-mult0*SL_PCT/100);tpslMin=Math.min(tpslMin,slp);tpslMax=Math.max(tpslMax,slp);
+  }
+  const rawMin=Math.min(...cs.map(c=>c.l),tpslMin===Infinity?Infinity:tpslMin);
+  const rawMax=Math.max(...cs.map(c=>c.h),tpslMax===-Infinity?-Infinity:tpslMax);
+  const pad=(rawMax-rawMin)*0.06;
   const minP=rawMin-pad;
   const maxP=rawMax+pad;
   const rng=maxP-minP||1;
@@ -722,34 +746,43 @@ function drawMain(){
       if(!buy&&!sell)continue;
       const x=tx(i),ep=cs[i].c,mult=buy?1:-1;
 
-      // ── Arrow (small, clean like TradingView) ──
-      const arrowY=buy?ty(cs[i].l)-6:ty(cs[i].h)+6;
-      ctx.save();
-      ctx.shadowColor=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
-      ctx.shadowBlur=8;
-      // small triangle
-      ctx.beginPath();
-      if(buy){
-        ctx.moveTo(x,arrowY-10);ctx.lineTo(x+6,arrowY+2);ctx.lineTo(x-6,arrowY+2);
-      }else{
-        ctx.moveTo(x,arrowY+10);ctx.lineTo(x+6,arrowY-2);ctx.lineTo(x-6,arrowY-2);
-      }
-      ctx.closePath();
-      ctx.fillStyle=buy?'#00e676':'#ff3a6e';ctx.fill();
-      ctx.shadowBlur=0;ctx.restore();
+      // ── FLAG PIN (TradingView style) ──
+      const pinX=x;
+      const pinBaseY=buy?ty(cs[i].l):ty(cs[i].h);
+      const pinDir=buy?1:-1; // 1=up from bottom, -1=down from top
+      const pinColor=buy?'#00e676':'#ff3a6e';
+      const pinGlow=buy?'rgba(0,230,118,.5)':'rgba(255,58,110,.5)';
+      const flagLabel=buy?'BUY':'SELL';
 
-      // ── BUY/SELL badge below/above arrow ──
-      const badgeY=buy?arrowY+14:arrowY-14;
-      ctx.font='bold 9px Space Mono';ctx.textAlign='center';
-      const btext=buy?'BUY':'SELL';
-      const btw=ctx.measureText(btext).width+8;
-      ctx.fillStyle=buy?'rgba(0,230,118,.25)':'rgba(255,58,110,.25)';
-      rr(ctx,x-btw/2,badgeY-9,btw,13,3);ctx.fill();
-      ctx.strokeStyle=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
-      ctx.lineWidth=.5;ctx.setLineDash([]);
-      rr(ctx,x-btw/2,badgeY-9,btw,13,3);ctx.stroke();
-      ctx.fillStyle=buy?'#00e676':'#ff3a6e';
-      ctx.fillText(btext,x,badgeY+1);
+      ctx.save();
+      ctx.shadowColor=pinGlow;ctx.shadowBlur=12;
+
+      // vertical stem
+      const stemLen=28;
+      const stemTopY=pinBaseY-pinDir*stemLen;
+      ctx.strokeStyle=pinColor;ctx.lineWidth=2;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(pinX,pinBaseY-pinDir*2);ctx.lineTo(pinX,stemTopY);ctx.stroke();
+
+      // circle at base
+      ctx.beginPath();ctx.arc(pinX,pinBaseY-pinDir*2,4,0,Math.PI*2);
+      ctx.fillStyle=pinColor;ctx.fill();
+
+      // flag rectangle
+      ctx.font='bold 10px Space Mono';
+      const fw=ctx.measureText(flagLabel).width+14;
+      const fh=16;
+      const fx=pinX+2;
+      const fy=buy?stemTopY-fh:stemTopY;
+      ctx.fillStyle=pinColor;
+      rr(ctx,fx,fy,fw,fh,3);ctx.fill();
+
+      // flag text
+      ctx.shadowBlur=0;
+      ctx.fillStyle=buy?'#001a09':'#1a0009';
+      ctx.textAlign='left';ctx.font='bold 10px Space Mono';
+      ctx.fillText(flagLabel,fx+7,fy+fh/2+4);
+
+      ctx.restore();
 
       // ── TP/SL lines with TradingView-style end badges ──
       // Only draw lines that are within visible price range
@@ -933,12 +966,23 @@ setInterval(buildTicker,5000);
 // ═══ EVENTS ═══
 function initEvents(){
   const box=document.getElementById('mainbox');
+
+  // ── Wheel zoom (zoom to cursor position) ──
   box.addEventListener('wheel',e=>{
     e.preventDefault();
-    const f=e.deltaY>0?1.1:.91;
-    S.view.vis=Math.max(10,Math.min(S.candles.length,Math.round(S.view.vis*f)));
+    const rect=box.getBoundingClientRect();
+    const PL=70,PR=60;
+    const cursorRatio=(e.clientX-rect.left-PL)/Math.max(1,rect.width-PL-PR);
+    const oldVis=S.view.vis;
+    const f=e.deltaY>0?1.12:.89;
+    const newVis=Math.max(5,Math.min(S.candles.length,Math.round(oldVis*f)));
+    // keep cursor over same candle
+    const shift=Math.round((oldVis-newVis)*cursorRatio);
+    S.view.off=Math.max(0,Math.min(S.candles.length-newVis,S.view.off+shift));
+    S.view.vis=newVis;
     renderAll();
   },{passive:false});
+
   box.addEventListener('mousedown',e=>{
     S.drag.on=true;S.drag.x0=e.clientX;S.drag.off0=S.view.off;
     box.style.cursor='grabbing';
@@ -948,14 +992,42 @@ function initEvents(){
     S.mouse.x=e.clientX-rect.left;S.mouse.y=e.clientY-rect.top;
     S.mouse.in=S.mouse.x>0&&S.mouse.x<rect.width&&S.mouse.y>0&&S.mouse.y<rect.height;
     if(S.drag.on){
-      const slotW=(rect.width-78)/Math.max(1,S.view.vis);
+      const PL=70,PR=60;
+      const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
       const delta=Math.round(-(e.clientX-S.drag.x0)/slotW);
       S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,S.drag.off0+delta));
+      renderAll();
+    } else {
+      drawMain();
     }
-    drawMain();
   });
   window.addEventListener('mouseup',()=>{S.drag.on=false;box.style.cursor='crosshair'});
   box.addEventListener('mouseleave',()=>{S.mouse.in=false;drawMain()});
+
+  // ── Fullscreen button ──
+  document.getElementById('btnFS').onclick=()=>{
+    const el=document.getElementById('paneChart');
+    if(!document.fullscreenElement){
+      el.requestFullscreen&&el.requestFullscreen();
+    } else {
+      document.exitFullscreen&&document.exitFullscreen();
+    }
+  };
+  document.addEventListener('fullscreenchange',()=>{
+    setTimeout(renderAll,100);
+  });
+
+  // ── Zoom buttons ──
+  document.getElementById('btnZoomIn').onclick=()=>{
+    S.view.vis=Math.max(5,Math.round(S.view.vis*.75));renderAll();
+  };
+  document.getElementById('btnZoomOut').onclick=()=>{
+    S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.33));renderAll();
+  };
+  document.getElementById('btnZoomReset').onclick=()=>{
+    S.view.vis=Math.min(80,S.candles.length);S.view.off=0;renderAll();
+  };
+
   // Touch
   let t0x=0,t0off=0,p0=0;
   box.addEventListener('touchstart',e=>{
@@ -964,15 +1036,16 @@ function initEvents(){
   },{passive:true});
   box.addEventListener('touchmove',e=>{
     const rect=box.getBoundingClientRect();
+    const PL=70,PR=60;
     if(e.touches.length===1){
-      const sw=(rect.width-78)/Math.max(1,S.view.vis);
+      const sw=(rect.width-PL-PR)/Math.max(1,S.view.vis);
       S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,t0off+Math.round(-(e.touches[0].clientX-t0x)/sw)));
-      drawMain();
+      renderAll();
     }
     if(e.touches.length===2){
       const d2=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      S.view.vis=Math.max(10,Math.min(S.candles.length,Math.round(S.view.vis*p0/d2)));
-      p0=d2;drawMain();
+      S.view.vis=Math.max(5,Math.min(S.candles.length,Math.round(S.view.vis*p0/d2)));
+      p0=d2;renderAll();
     }
   },{passive:true});
 }
