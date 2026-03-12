@@ -178,6 +178,44 @@ canvas{display:block;position:absolute;left:0}
   </div>
 </div>
 
+<!-- ALERTS MODAL -->
+<div id="alertsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9998;align-items:center;justify-content:center">
+  <div style="background:#0d1117;border:1px solid #2a3a1a;border-radius:10px;padding:20px;width:400px;max-height:80vh;display:flex;flex-direction:column;font-family:'Space Mono',monospace;box-shadow:0 0 40px rgba(255,213,79,.08)">
+    <div style="display:flex;align-items:center;margin-bottom:14px">
+      <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#ffd54f;letter-spacing:2px">🔔 PRICE ALERTS</span>
+      <button onclick="closeAlerts()" style="margin-left:auto;background:transparent;border:none;color:#4a6070;font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <!-- Add form -->
+    <div style="display:grid;grid-template-columns:1.2fr 1.4fr .9fr auto;gap:6px;margin-bottom:12px;align-items:end">
+      <div>
+        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Пара</div>
+        <select id="alPair" style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:10px;outline:none;border-radius:3px"></select>
+      </div>
+      <div>
+        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Цена</div>
+        <input id="alPrice" type="number" step="any" placeholder="0.00"
+          style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:11px;outline:none;border-radius:3px">
+      </div>
+      <div>
+        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Условие</div>
+        <select id="alDir" style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:10px;outline:none;border-radius:3px">
+          <option value="above">↑ Выше</option>
+          <option value="below">↓ Ниже</option>
+        </select>
+      </div>
+      <button onclick="addAlert()" style="padding:7px 14px;background:#ffd54f;color:#0d0900;border:none;font-family:inherit;font-size:12px;font-weight:700;border-radius:3px;cursor:pointer;white-space:nowrap">+ ADD</button>
+    </div>
+    <!-- Quick set current price -->
+    <div style="font-size:9px;color:#4a6070;margin-bottom:10px">
+      Текущая цена <span id="alCurPrice" style="color:#00e5ff;cursor:pointer;text-decoration:underline" onclick="document.getElementById('alPrice').value=S.prices[S.pair]||''"></span> — нажми чтобы вставить
+    </div>
+    <!-- List -->
+    <div id="alertList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:#1e2a38 transparent;padding-right:2px">
+      <div id="alertEmpty" style="text-align:center;color:#4a6070;font-size:11px;padding:20px 0">Нет активных алертов</div>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="logo">APEX<span>X</span></div>
   <div class="live-dot"></div>
@@ -223,6 +261,7 @@ canvas{display:block;position:absolute;left:0}
           <button class="ibtn" id="btnZoomIn"    title="Приблизить">🔍+</button>
           <button class="ibtn" id="btnZoomOut"   title="Отдалить">🔍−</button>
           <button class="ibtn" id="btnZoomReset" title="Сбросить зум">⊡</button>
+          <button class="ibtn" id="btnAlerts"    title="Price Alerts" onclick="openAlerts()" style="color:var(--gold)">🔔<span id="alertCount" style="margin-left:2px"></span></button>
           <button class="ibtn" id="btnFS"        title="Полный экран">⛶</button>
           <button class="ibtn" id="btnSettings"  title="Настройки сигнала" onclick="openSettings()">⚙️ SSP</button>
         </div>
@@ -298,7 +337,7 @@ const PAIRS=[
   'BTCUSDT','UNIUSDT','AVAXUSDT','LINKUSDT','ETHUSDT',
   'ENAUSDT','NEARUSDT','HYPEUSDT'
 ];
-const TF_LIM={'1m':150,'5m':150,'15m':120,'1h':120,'4h':100,'1d':80};
+const TF_LIM={'1m':500,'5m':500,'15m':300,'1h':300,'4h':200,'1d':200};
 const TP=[3.5,5.0,7.0,11.0]; const SL_PCT=8.5;
 const USER_BALANCE_DEFAULT=100; // USDT, можно изменить
 
@@ -488,8 +527,8 @@ async function fetchTicker(p){
       set('rVol',fmtV(d.volume));set('rQvol',fmtV(d.quoteVolume));
       updHeader();
     }
-    // update PnL in signals table
     updSigPnl(p,+d.lastPrice);
+    checkAlerts(p,+d.lastPrice);
   }catch(e){}
 }
 async function fetchKlines(p,tf){
@@ -691,16 +730,134 @@ function openSettings(){
   document.getElementById('cfgBalance').value=S.cfg.balance||100;
   document.getElementById('cfgSens').value=S.cfg.sens||5;
   document.getElementById('cfgAtr').value=S.cfg.atrPeriod||10;
-  const m=document.getElementById('modalOverlay');
-  m.style.display='flex';
+  document.getElementById('modalOverlay').style.display='flex';
 }
 function closeSettings(){document.getElementById('modalOverlay').style.display='none';}
 function applySettings(){
   S.cfg.balance=+document.getElementById('cfgBalance').value||100;
   S.cfg.sens=+document.getElementById('cfgSens').value||5;
   S.cfg.atrPeriod=+document.getElementById('cfgAtr').value||10;
-  closeSettings();
-  renderAll();
+  closeSettings();renderAll();
+}
+
+// ═══ PRICE ALERTS ═══
+const alerts=[]; // {id, pair, price, dir:'above'|'below', created}
+
+function openAlerts(){
+  const m=document.getElementById('alertsModal');
+  // Populate pair select
+  const sel=document.getElementById('alPair');
+  sel.innerHTML=PAIRS.map(p=>`<option value="${p}"${p===S.pair?' selected':''}>${p.replace('USDT','/USDT')}</option>`).join('');
+  // Show current price
+  document.getElementById('alCurPrice').textContent=fmt(S.prices[S.pair]||0);
+  renderAlertList();
+  m.style.display='flex';
+}
+function closeAlerts(){document.getElementById('alertsModal').style.display='none';}
+
+function addAlert(){
+  const pair=document.getElementById('alPair').value;
+  const price=+document.getElementById('alPrice').value;
+  const dir=document.getElementById('alDir').value;
+  if(!price||isNaN(price)){document.getElementById('alPrice').style.borderColor='#ff3a6e';setTimeout(()=>document.getElementById('alPrice').style.borderColor='#1e2a38',1200);return;}
+  alerts.push({id:Date.now(),pair,price,dir,created:Date.now()});
+  document.getElementById('alPrice').value='';
+  renderAlertList();
+  updAlertBadge();
+}
+
+function removeAlert(id){
+  const i=alerts.findIndex(a=>a.id===id);
+  if(i>=0)alerts.splice(i,1);
+  renderAlertList();updAlertBadge();
+}
+
+function renderAlertList(){
+  const list=document.getElementById('alertList');
+  const empty=document.getElementById('alertEmpty');
+  if(!alerts.length){empty.style.display='block';list.innerHTML='';list.appendChild(empty);return;}
+  empty.style.display='none';
+  // Sort: current pair first, then by pair name
+  const sorted=[...alerts].sort((a,b)=>(b.pair===S.pair)-(a.pair===S.pair)||a.pair.localeCompare(b.pair));
+  list.innerHTML=sorted.map(a=>{
+    const cur=S.prices[a.pair]||0;
+    const dist=cur?((a.price-cur)/cur*100).toFixed(2):null;
+    const distStr=dist?(+dist>=0?`+${dist}%`:`${dist}%`):'—';
+    const distCol=dist?(Math.abs(+dist)<1?'#ffd54f':+dist>0?'#00e676':'#ff3a6e'):'#4a6070';
+    return`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:8px 10px;background:#111820;border-radius:4px;border:1px solid #1e2a38">
+      <div>
+        <div style="font-size:11px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div>
+        <div style="font-size:10px;margin-top:2px">
+          <span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Выше':'↓ Ниже'}</span>
+          <span style="color:#c8d8e8;margin-left:6px">${fmt(a.price)}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:${distCol};text-align:right">${distStr}</div>
+      <div style="font-size:10px;color:#4a6070">${fmtAgo(a.created)}</div>
+      <button onclick="removeAlert(${a.id})" style="background:transparent;border:1px solid #1e2a38;color:#ff3a6e;padding:3px 7px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit">✕</button>
+    </div>`;
+  }).join('');
+  // Re-append empty div so it can be reused
+  if(!list.contains(document.getElementById('alertEmpty')))list.appendChild(document.getElementById('alertEmpty'));
+}
+
+function updAlertBadge(){
+  const el=document.getElementById('alertCount');
+  el.textContent=alerts.length?alerts.length:'';
+  el.style.color=alerts.length?'#ffd54f':'';
+}
+
+function checkAlerts(pair,price){
+  if(!price||!alerts.length)return;
+  const fired=[];
+  for(let i=alerts.length-1;i>=0;i--){
+    const a=alerts[i];
+    if(a.pair!==pair)continue;
+    const hit=(a.dir==='above'&&price>=a.price)||(a.dir==='below'&&price<=a.price);
+    if(!hit)continue;
+    fired.push(a);
+    alerts.splice(i,1);
+  }
+  fired.forEach(a=>fireAlert(a,price));
+  if(fired.length){updAlertBadge();renderAlertList();}
+}
+
+function fireAlert(a,price){
+  // Sound — distinct double beep
+  try{
+    const ac=new AudioContext();
+    [0,0.18].forEach(t=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);
+      o.frequency.value=880;g.gain.setValueAtTime(.4,ac.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+t+0.25);
+      o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.25);
+    });
+  }catch(e){}
+  // Toast
+  const wrap=document.getElementById('toastwrap');
+  const div=document.createElement('div');
+  div.className='toast BUY';
+  div.style.borderColor='#ffd54f';
+  div.innerHTML=`
+    <span class="toast-x" onclick="this.parentElement.remove()">✕</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="font-size:26px">🔔</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#ffd54f;letter-spacing:1px">PRICE ALERT!</div>
+        <div style="font-size:12px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;line-height:1.8;color:#c8d8e8">
+      <span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Цена поднялась выше':'↓ Цена упала ниже'}</span> <b>${fmt(a.price)}</b><br>
+      Текущая цена: <b style="color:#00e5ff">${fmt(price)}</b>
+    </div>
+    <div class="toast-bar" style="background:#ffd54f"></div>`;
+  div.onclick=e=>{if(!e.target.classList.contains('toast-x')){pick(a.pair);closeAlerts();}};
+  wrap.prepend(div);
+  setTimeout(()=>{div.style.animation='tout .35s ease forwards';setTimeout(()=>div.remove(),350);},8000);
+  // Draw alert line on chart
+  if(a.pair===S.pair) drawMain();
 }
 function createEmpty(){
   const d=document.createElement('div');d.className='sig-empty';d.id='sigEmpty';
@@ -967,37 +1124,47 @@ function drawMain(){
       lastSigIdx=i;lastSigBuy=buy;
 
       const x=tx(i);
-      const pinColor=buy?'#00e676':'#ff3a6e';
-      const pinGlow=buy?'rgba(0,230,118,.5)':'rgba(255,58,110,.5)';
-      const pinBaseY=buy?ty(cs[i].l):ty(cs[i].h);
-      const pinDir=buy?1:-1;
-      const flagLabel=buy?'BUY':'SELL';
+      const col=buy?'#00e676':'#ff3a6e';
+      const glow=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
+      const baseY=buy?ty(cs[i].l):ty(cs[i].h);
+      const dir=buy?-1:1; // -1 = upward, 1 = downward
+      const label=buy?'BUY':'SELL';
+      const stemH=slot>12?40:28; // bigger flag when candles are wider
 
       ctx.save();
-      ctx.shadowColor=pinGlow;ctx.shadowBlur=12;
+      ctx.shadowColor=glow;ctx.shadowBlur=16;
 
-      // stem
-      const stemLen=26;
-      const stemTopY=pinBaseY-pinDir*stemLen;
-      ctx.strokeStyle=pinColor;ctx.lineWidth=2;ctx.setLineDash([]);
-      ctx.beginPath();ctx.moveTo(x,pinBaseY-pinDir*3);ctx.lineTo(x,stemTopY);ctx.stroke();
+      // ── Stem ──
+      ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(x,baseY);ctx.lineTo(x,baseY+dir*stemH);ctx.stroke();
 
-      // dot at candle
-      ctx.beginPath();ctx.arc(x,pinBaseY-pinDir*3,4,0,Math.PI*2);
-      ctx.fillStyle=pinColor;ctx.fill();
+      // ── Circle at candle ──
+      ctx.beginPath();ctx.arc(x,baseY,5,0,Math.PI*2);
+      ctx.fillStyle=col;ctx.fill();
 
-      // flag
-      ctx.font='bold 10px Space Mono';
-      const fw=ctx.measureText(flagLabel).width+14;
-      const fh=16;
-      const fx=x-fw/2; // center flag over stem
-      const fy=buy?stemTopY-fh:stemTopY;
-      ctx.fillStyle=pinColor;
-      rr(ctx,fx,fy,fw,fh,3);ctx.fill();
+      // ── Flag body ──
+      const flagW=slot>12?52:38;
+      const flagH=slot>12?22:17;
+      const flagX=x+2; // flag extends to the right of stem
+      const flagY=baseY+dir*stemH+(dir>0?0:-flagH);
+
+      // Flag background
+      ctx.fillStyle=col;
+      rr(ctx,flagX,flagY,flagW,flagH,4);ctx.fill();
+
+      // Flag shine overlay
+      const grad=ctx.createLinearGradient(flagX,flagY,flagX,flagY+flagH);
+      grad.addColorStop(0,'rgba(255,255,255,.2)');grad.addColorStop(1,'rgba(0,0,0,.1)');
+      ctx.fillStyle=grad;
+      rr(ctx,flagX,flagY,flagW,flagH,4);ctx.fill();
+
+      // Flag text
       ctx.shadowBlur=0;
-      ctx.fillStyle=buy?'#001408':'#150006';
-      ctx.textAlign='center';ctx.font='bold 10px Space Mono';
-      ctx.fillText(flagLabel,x,fy+fh/2+4);
+      ctx.fillStyle=buy?'#002210':'#200008';
+      ctx.textAlign='center';
+      ctx.font=`bold ${slot>12?12:10}px Syne,sans-serif`;
+      ctx.fillText(label,flagX+flagW/2,flagY+flagH/2+4);
+
       ctx.restore();
     }
 
@@ -1078,12 +1245,9 @@ function drawMain(){
 
   // ── CURRENT PRICE badge (cyan, like TradingView) ──
   const lp=cs[n-1].c,lpy=ty(lp);
-  const isUp=(cs[n-1].c>=(cs[n-2]?.c||cs[n-1].c));
-  // dashed line across chart
   ctx.strokeStyle='rgba(0,229,255,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
   ctx.beginPath();ctx.moveTo(PL,lpy);ctx.lineTo(W-PR,lpy);ctx.stroke();
   ctx.setLineDash([]);
-  // badge
   const lpTxt=fmt(lp);
   ctx.font='bold 10px Space Mono';
   const lpTw=ctx.measureText(lpTxt).width;
@@ -1094,6 +1258,30 @@ function drawMain(){
   rr(ctx,badgeX,badgeY,badgeW,18,3);ctx.fill();
   ctx.fillStyle='#050d14';ctx.textAlign='left';
   ctx.fillText(lpTxt,badgeX+(badgeW-lpTw)/2,lpy+5);
+
+  // ── ALERT LINES ──
+  alerts.filter(a=>a.pair===S.pair).forEach(a=>{
+    const ay=ty(a.price);
+    if(ay<PT-4||ay>PT+CH+4)return;
+    const col='#ffd54f';
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(PL,ay);ctx.lineTo(W-PR,ay);ctx.stroke();
+    ctx.setLineDash([]);
+    // badge on right axis
+    const atxt=fmt(a.price);
+    ctx.font='bold 9px Space Mono';
+    const atw=ctx.measureText(atxt).width;
+    const abw=Math.max(atw+12,PR-2);
+    ctx.fillStyle='#2a2500';
+    rr(ctx,W-PR+1,ay-9,abw,18,3);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    rr(ctx,W-PR+1,ay-9,abw,18,3);ctx.stroke();
+    ctx.fillStyle=col;ctx.textAlign='left';
+    ctx.fillText(atxt,W-PR+1+(abw-atw)/2,ay+4);
+    // 🔔 icon left side
+    ctx.font='11px sans-serif';ctx.textAlign='right';
+    ctx.fillText('🔔',PL-2,ay+4);
+  });
 
   // ── CROSSHAIR ──
   if(S.mouse.in){
@@ -1201,7 +1389,7 @@ function connectWS(p,tf){
       const last=S.candles.at(-1);
       if(last&&last.t===c.t)S.candles[S.candles.length-1]=c;
       else{S.candles.push(c);if(S.candles.length>500)S.candles.shift();}
-      S.prices[p]=c.c;updHeader();renderAll();
+      S.prices[p]=c.c;updHeader();checkAlerts(p,c.c);renderAll();
     };
     S.ws.onerror=()=>{};
   }catch(e){}
@@ -1242,98 +1430,124 @@ setInterval(buildTicker,5000);
 // ═══ EVENTS ═══
 function initEvents(){
   const box=document.getElementById('mainbox');
+  const PL=70,PR=60;
 
   // ── Wheel zoom (zoom to cursor position) ──
   box.addEventListener('wheel',e=>{
     e.preventDefault();
     const rect=box.getBoundingClientRect();
-    const PL=70,PR=60;
-    const cursorRatio=(e.clientX-rect.left-PL)/Math.max(1,rect.width-PL-PR);
+    const ratio=Math.max(0,Math.min(1,(e.clientX-rect.left-PL)/(rect.width-PL-PR)));
     const oldVis=S.view.vis;
     const f=e.deltaY>0?1.12:.89;
     const newVis=Math.max(5,Math.min(S.candles.length,Math.round(oldVis*f)));
-    // keep cursor over same candle
-    const shift=Math.round((oldVis-newVis)*cursorRatio);
-    S.view.off=Math.max(0,Math.min(S.candles.length-newVis,S.view.off+shift));
+    S.view.off=Math.max(0,Math.min(S.candles.length-newVis,S.view.off+Math.round((oldVis-newVis)*ratio)));
     S.view.vis=newVis;
     renderAll();
+    // Load more if zoomed out to edge
+    maybeLoadMore();
   },{passive:false});
 
-  box.addEventListener('mousedown',e=>{
+  // ── POINTER EVENTS (replaces mouse + touch) ──
+  let rafId=null,startX=0,startOff=0,startDist=0,startVis=0,ptrs={};
+
+  box.addEventListener('pointerdown',e=>{
     e.preventDefault();
-    S.drag.on=true;S.drag.x0=e.clientX;S.drag.off0=S.view.off;
-    box.style.cursor='grabbing';
+    box.setPointerCapture(e.pointerId);
+    ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    const ids=Object.keys(ptrs);
+    if(ids.length===1){
+      // single finger / mouse — start drag
+      S.drag.on=true;startX=e.clientX;startOff=S.view.off;
+      box.style.cursor='grabbing';
+    } else if(ids.length===2){
+      // two fingers — pinch zoom
+      S.drag.on=false;
+      const a=ptrs[ids[0]],b=ptrs[ids[1]];
+      startDist=Math.hypot(a.x-b.x,a.y-b.y);
+      startVis=S.view.vis;
+    }
   });
 
-  let rafId=null;
-  window.addEventListener('mousemove',e=>{
+  box.addEventListener('pointermove',e=>{
+    ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
     const rect=box.getBoundingClientRect();
     S.mouse.x=e.clientX-rect.left;
     S.mouse.y=e.clientY-rect.top;
     S.mouse.in=S.mouse.x>0&&S.mouse.x<rect.width&&S.mouse.y>0&&S.mouse.y<rect.height;
 
-    if(S.drag.on){
-      const PL=70,PR=60;
-      const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
-      const delta=Math.round(-(e.clientX-S.drag.x0)/slotW);
-      const newOff=Math.max(0,Math.min(S.candles.length-S.view.vis,S.drag.off0+delta));
-      if(newOff!==S.view.off){
-        S.view.off=newOff;
-        if(rafId)cancelAnimationFrame(rafId);
-        rafId=requestAnimationFrame(()=>{ drawMain();drawRSI();drawMACD(); });
+    const ids=Object.keys(ptrs);
+    if(ids.length>=2){
+      // Pinch zoom
+      const a=ptrs[ids[0]],b=ptrs[ids[1]];
+      const dist=Math.hypot(a.x-b.x,a.y-b.y);
+      if(startDist>0){
+        const newVis=Math.max(5,Math.min(S.candles.length,Math.round(startVis*startDist/dist)));
+        if(newVis!==S.view.vis){S.view.vis=newVis;}
       }
-    } else {
-      if(rafId)cancelAnimationFrame(rafId);
-      rafId=requestAnimationFrame(()=>drawMain());
+    } else if(S.drag.on){
+      const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
+      const delta=Math.round(-(e.clientX-startX)/slotW);
+      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,startOff+delta));
+      // Load more candles when dragging to the left edge
+      if(S.view.off>=S.candles.length-S.view.vis-5) maybeLoadMore();
     }
+
+    if(rafId)cancelAnimationFrame(rafId);
+    rafId=requestAnimationFrame(()=>{drawMain();drawRSI();drawMACD();});
   });
-  window.addEventListener('mouseup',()=>{S.drag.on=false;box.style.cursor='crosshair'});
-  box.addEventListener('mouseleave',()=>{S.mouse.in=false;drawMain()});
+
+  const endPtr=e=>{
+    delete ptrs[e.pointerId];
+    if(Object.keys(ptrs).length===0){
+      S.drag.on=false;
+      box.style.cursor='crosshair';
+    }
+  };
+  box.addEventListener('pointerup',endPtr);
+  box.addEventListener('pointercancel',endPtr);
+  box.addEventListener('pointerleave',e=>{
+    S.mouse.in=false;
+    endPtr(e);
+    drawMain();
+  });
+
+  // ── Load more candles when scrolled to far left ──
+  async function maybeLoadMore(){
+    if(S._loadingMore)return;
+    if(S.view.off<S.candles.length-S.view.vis-10)return;
+    S._loadingMore=true;
+    try{
+      const oldest=S.candles[0];
+      const endTime=oldest.t-1;
+      const lim=TF_LIM[S.tf]||300;
+      const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${S.pair}&interval=${S.tf}&limit=${lim}&endTime=${endTime}`);
+      if(r.ok){
+        const d=await r.json();
+        const more=d.map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}));
+        if(more.length>0){
+          S.candles=[...more,...S.candles];
+          S.view.off+=more.length;
+          S._pivots=calcPivots(S.candles);
+          S._trail=calcTrail(S.candles);
+          drawMain();drawRSI();drawMACD();
+        }
+      }
+    }catch(e){}
+    S._loadingMore=false;
+  }
 
   // ── Fullscreen button ──
   document.getElementById('btnFS').onclick=()=>{
     const el=document.getElementById('paneChart');
-    if(!document.fullscreenElement){
-      el.requestFullscreen&&el.requestFullscreen();
-    } else {
-      document.exitFullscreen&&document.exitFullscreen();
-    }
+    if(!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
   };
-  document.addEventListener('fullscreenchange',()=>{
-    setTimeout(renderAll,100);
-  });
+  document.addEventListener('fullscreenchange',()=>setTimeout(renderAll,100));
 
   // ── Zoom buttons ──
-  document.getElementById('btnZoomIn').onclick=()=>{
-    S.view.vis=Math.max(5,Math.round(S.view.vis*.75));renderAll();
-  };
-  document.getElementById('btnZoomOut').onclick=()=>{
-    S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.33));renderAll();
-  };
-  document.getElementById('btnZoomReset').onclick=()=>{
-    S.view.vis=Math.min(80,S.candles.length);S.view.off=0;renderAll();
-  };
-
-  // Touch
-  let t0x=0,t0off=0,p0=0;
-  box.addEventListener('touchstart',e=>{
-    if(e.touches.length===1){t0x=e.touches[0].clientX;t0off=S.view.off}
-    if(e.touches.length===2)p0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-  },{passive:true});
-  box.addEventListener('touchmove',e=>{
-    const rect=box.getBoundingClientRect();
-    const PL=70,PR=60;
-    if(e.touches.length===1){
-      const sw=(rect.width-PL-PR)/Math.max(1,S.view.vis);
-      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,t0off+Math.round(-(e.touches[0].clientX-t0x)/sw)));
-      renderAll();
-    }
-    if(e.touches.length===2){
-      const d2=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      S.view.vis=Math.max(5,Math.min(S.candles.length,Math.round(S.view.vis*p0/d2)));
-      p0=d2;renderAll();
-    }
-  },{passive:true});
+  document.getElementById('btnZoomIn').onclick=()=>{S.view.vis=Math.max(5,Math.round(S.view.vis*.75));renderAll();};
+  document.getElementById('btnZoomOut').onclick=()=>{S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.33));renderAll();};
+  document.getElementById('btnZoomReset').onclick=()=>{S.view.vis=Math.min(120,S.candles.length);S.view.off=0;renderAll();};
 }
 
 // ═══ UTILS ═══
