@@ -21,8 +21,6 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;f
 .tk .s{color:var(--text);font-weight:700}.tk .p{color:var(--muted)}
 .up{color:var(--green)}.dn{color:var(--red)}
 .main{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
 .sidebar{width:198px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .srch{padding:8px;border-bottom:1px solid var(--border)}
 .srch input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 8px;font-family:'Space Mono',monospace;font-size:11px;outline:none;border-radius:3px}
@@ -39,21 +37,14 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;f
 .sbadge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-top:2px;display:inline-block}
 .sbadge.BUY{background:rgba(0,230,118,.2);color:var(--green)}
 .sbadge.SELL{background:rgba(255,58,110,.2);color:var(--red)}
-
-/* CHART AREA */
 .chart-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
-
-/* TABS inside chart area */
 .area-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
 .atab{padding:8px 18px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.5px;position:relative}
 .atab:hover{color:var(--text)}
 .atab.on{color:var(--accent);border-bottom-color:var(--accent)}
 .atab .badge{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:8px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
-
 .tab-pane{display:none;flex:1;flex-direction:column;overflow:hidden}
 .tab-pane.on{display:flex}
-
-/* CHART HEADER */
 .chart-header{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
 .chart-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--accent)}
 .chart-price{font-size:18px;font-weight:700;font-family:'Syne',sans-serif}
@@ -65,10 +56,8 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;f
 .tbtn:hover,.ibtn:hover{border-color:var(--accent);color:var(--accent)}
 .tbtn.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .ibtn.on{background:rgba(0,229,255,.1);border-color:var(--accent);color:var(--accent)}
-
-/* CHARTS */
 .cwrap{flex:1;display:flex;flex-direction:column;padding:6px;gap:5px;overflow:hidden}
-.mainbox{flex:1;position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:crosshair;min-height:0;user-select:none}
+.mainbox{flex:1;position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:crosshair;min-height:0;user-select:none;touch-action:none}
 .subrow{display:flex;gap:5px;height:90px;flex-shrink:0}
 .subbox{flex:1;position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden}
 .sublabel{position:absolute;top:4px;left:7px;font-size:9px;color:var(--muted);z-index:2;pointer-events:none}
@@ -76,8 +65,6 @@ canvas{display:block;position:absolute;left:0}
 .loader{position:absolute;inset:0;background:rgba(8,11,16,.85);display:flex;align-items:center;justify-content:center;z-index:10}
 .spin{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-/* SIGNALS PANE */
 .sig-toolbar{display:flex;align-items:center;gap:4px;padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .sf{padding:3px 8px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;border-radius:3px;transition:all .15s}
 .sf:hover{border-color:var(--accent);color:var(--accent)}
@@ -85,7 +72,6 @@ canvas{display:block;position:absolute;left:0}
 .sf.buy.on{background:rgba(0,230,118,.1);border-color:var(--green);color:var(--green)}
 .sf.sell.on{background:rgba(255,58,110,.1);border-color:var(--red);color:var(--red)}
 .sig-count-label{margin-left:auto;font-size:10px;color:var(--muted)}
-
 .sig-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .sig-thead{display:grid;grid-template-columns:90px 60px 70px 50px 1fr;padding:5px 10px;font-size:9px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);text-transform:uppercase;position:sticky;top:0;background:var(--bg2);z-index:2}
 .sig-item{display:grid;grid-template-columns:90px 60px 70px 50px 1fr;padding:8px 10px;border-bottom:1px solid rgba(30,42,56,.4);cursor:pointer;transition:background .15s;align-items:center;gap:0}
@@ -103,8 +89,6 @@ canvas{display:block;position:absolute;left:0}
 .si-pnl.pos{color:var(--green)}.si-pnl.neg{color:var(--red)}.si-pnl.neu{color:var(--muted)}
 .sig-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px}
 .sig-empty-ico{font-size:36px;opacity:.25}
-
-/* RIGHT PANEL */
 .rpanel{width:172px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
 .rsec{border-bottom:1px solid var(--border);padding:9px}
 .rtitle{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:7px}
@@ -124,8 +108,6 @@ canvas{display:block;position:absolute;left:0}
 .ask .obp{color:var(--red)}.bid .obp{color:var(--green)}
 .obs{color:var(--muted)}
 .obspread{text-align:center;color:var(--gold);font-size:9px;padding:3px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:3px 0}
-
-/* TOAST */
 #toastwrap{position:fixed;top:50px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:300px}
 .toast{background:#0d1520;border:1px solid var(--border);border-radius:10px;padding:14px 16px 12px;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:tin .35s cubic-bezier(.2,.8,.3,1);pointer-events:all;cursor:pointer;position:relative;overflow:hidden}
 .toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
@@ -142,8 +124,6 @@ canvas{display:block;position:absolute;left:0}
 .toast-x{position:absolute;top:8px;right:10px;color:var(--muted);font-size:13px;cursor:pointer;line-height:1}
 .toast-bar{position:absolute;bottom:0;left:0;height:2px;background:var(--accent);animation:tbar 5s linear forwards}
 @keyframes tbar{from{width:100%}to{width:0}}
-
-/* Fullscreen */
 #paneChart:fullscreen{background:var(--bg);display:flex;flex-direction:column}
 #paneChart:-webkit-full-screen{background:var(--bg);display:flex;flex-direction:column}
 #paneChart:fullscreen .cwrap{flex:1}
@@ -171,8 +151,8 @@ canvas{display:block;position:absolute;left:0}
           style="width:100%;margin-top:4px;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 8px;font-family:inherit;font-size:12px;outline:none;border-radius:3px">
       </label>
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button onclick="applySettings()" style="flex:1;padding:9px;background:#00e5ff;color:#050d14;border:none;font-family:inherit;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer">ПРИМЕНИТЬ</button>
-        <button onclick="closeSettings()" style="flex:1;padding:9px;background:transparent;color:#4a6070;border:1px solid #1e2a38;font-family:inherit;font-size:12px;border-radius:4px;cursor:pointer">ОТМЕНА</button>
+        <button onclick="applySettings()" style="flex:1;padding:9px;background:#00e5ff;color:#050d14;border:none;font-family:inherit;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer">ПРИМЕНИТИ</button>
+        <button onclick="closeSettings()" style="flex:1;padding:9px;background:transparent;color:#4a6070;border:1px solid #1e2a38;font-family:inherit;font-size:12px;border-radius:4px;cursor:pointer">ВІДМІНА</button>
       </div>
     </div>
   </div>
@@ -185,33 +165,30 @@ canvas{display:block;position:absolute;left:0}
       <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#ffd54f;letter-spacing:2px">🔔 PRICE ALERTS</span>
       <button onclick="closeAlerts()" style="margin-left:auto;background:transparent;border:none;color:#4a6070;font-size:18px;cursor:pointer;line-height:1">✕</button>
     </div>
-    <!-- Add form -->
     <div style="display:grid;grid-template-columns:1.2fr 1.4fr .9fr auto;gap:6px;margin-bottom:12px;align-items:end">
       <div>
         <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Пара</div>
         <select id="alPair" style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:10px;outline:none;border-radius:3px"></select>
       </div>
       <div>
-        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Цена</div>
+        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Ціна</div>
         <input id="alPrice" type="number" step="any" placeholder="0.00"
           style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:11px;outline:none;border-radius:3px">
       </div>
       <div>
-        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Условие</div>
+        <div style="font-size:9px;color:#4a6070;margin-bottom:3px;text-transform:uppercase">Умова</div>
         <select id="alDir" style="width:100%;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 5px;font-family:inherit;font-size:10px;outline:none;border-radius:3px">
-          <option value="above">↑ Выше</option>
-          <option value="below">↓ Ниже</option>
+          <option value="above">↑ Вище</option>
+          <option value="below">↓ Нижче</option>
         </select>
       </div>
       <button onclick="addAlert()" style="padding:7px 14px;background:#ffd54f;color:#0d0900;border:none;font-family:inherit;font-size:12px;font-weight:700;border-radius:3px;cursor:pointer;white-space:nowrap">+ ADD</button>
     </div>
-    <!-- Quick set current price -->
     <div style="font-size:9px;color:#4a6070;margin-bottom:10px">
-      Текущая цена <span id="alCurPrice" style="color:#00e5ff;cursor:pointer;text-decoration:underline" onclick="document.getElementById('alPrice').value=S.prices[S.pair]||''"></span> — нажми чтобы вставить
+      Поточна ціна <span id="alCurPrice" style="color:#00e5ff;cursor:pointer;text-decoration:underline" onclick="document.getElementById('alPrice').value=S.prices[S.pair]||''"></span> — натисни щоб вставити
     </div>
-    <!-- List -->
     <div id="alertList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:#1e2a38 transparent;padding-right:2px">
-      <div id="alertEmpty" style="text-align:center;color:#4a6070;font-size:11px;padding:20px 0">Нет активных алертов</div>
+      <div id="alertEmpty" style="text-align:center;color:#4a6070;font-size:11px;padding:20px 0">Немає активних алертів</div>
     </div>
   </div>
 </div>
@@ -223,20 +200,17 @@ canvas{display:block;position:absolute;left:0}
 </div>
 
 <div class="main">
-  <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="srch"><input type="text" id="search" placeholder="Поиск..." oninput="filterList(this.value)"></div>
+    <div class="srch"><input type="text" id="search" placeholder="Пошук..." oninput="filterList(this.value)"></div>
     <div class="plist" id="plist"></div>
   </div>
 
-  <!-- CENTER -->
   <div class="chart-area">
     <div class="area-tabs">
       <div class="atab on" onclick="switchTab('chart',this)">📈 CHART</div>
-      <div class="atab" onclick="switchTab('signals',this)" id="sigTab">🔥 СИГНАЛЫ <span class="badge" id="sigBadge" style="display:none">0</span></div>
+      <div class="atab" onclick="switchTab('signals',this)" id="sigTab">🔥 СИГНАЛИ <span class="badge" id="sigBadge" style="display:none">0</span></div>
     </div>
 
-    <!-- CHART PANE -->
     <div class="tab-pane on" id="paneChart">
       <div class="chart-header">
         <div class="chart-title" id="hTitle">—</div>
@@ -258,12 +232,12 @@ canvas{display:block;position:absolute;left:0}
           <button class="ibtn on" id="bTrail" onclick="tog('trail',this)">TRAIL</button>
         </div>
         <div class="tf-row" style="margin-left:auto">
-          <button class="ibtn" id="btnZoomIn"    title="Приблизить">🔍+</button>
-          <button class="ibtn" id="btnZoomOut"   title="Отдалить">🔍−</button>
-          <button class="ibtn" id="btnZoomReset" title="Сбросить зум">⊡</button>
+          <button class="ibtn" id="btnZoomIn"    title="Приблизити">🔍+</button>
+          <button class="ibtn" id="btnZoomOut"   title="Віддалити">🔍−</button>
+          <button class="ibtn" id="btnZoomReset" title="Скинути зум">⊡</button>
           <button class="ibtn" id="btnAlerts"    title="Price Alerts" onclick="openAlerts()" style="color:var(--gold)">🔔<span id="alertCount" style="margin-left:2px"></span></button>
-          <button class="ibtn" id="btnFS"        title="Полный экран">⛶</button>
-          <button class="ibtn" id="btnSettings"  title="Настройки сигнала" onclick="openSettings()">⚙️ SSP</button>
+          <button class="ibtn" id="btnFS"        title="Повний екран">⛶</button>
+          <button class="ibtn" id="btnSettings"  title="Налаштування сигналу" onclick="openSettings()">⚙️ SSP</button>
         </div>
       </div>
       <div class="cwrap">
@@ -278,29 +252,27 @@ canvas{display:block;position:absolute;left:0}
       </div>
     </div>
 
-    <!-- SIGNALS PANE -->
     <div class="tab-pane" id="paneSignals">
       <div class="sig-toolbar">
-        <button class="sf on" id="sfAll"  onclick="setSigFilter('all',this)">ВСЕ</button>
+        <button class="sf on" id="sfAll"  onclick="setSigFilter('all',this)">ВСІ</button>
         <button class="sf buy" id="sfBuy"  onclick="setSigFilter('buy',this)">BUY</button>
         <button class="sf sell" id="sfSell" onclick="setSigFilter('sell',this)">SELL</button>
-        <button class="sf" onclick="clearSignals()">ОЧИСТИТЬ</button>
-        <span class="sig-count-label" id="sigCountLabel">0 сигналов</span>
+        <button class="sf" onclick="clearSignals()">ОЧИСТИТИ</button>
+        <span class="sig-count-label" id="sigCountLabel">0 сигналів</span>
       </div>
       <div class="sig-thead">
-        <span>ПАРА</span><span>ТИП</span><span>ЦЕНА</span><span>ПОЗИЦИЯ</span><span>P&L / TP</span>
+        <span>ПАРА</span><span>ТИП</span><span>ЦІНА</span><span>ПОЗИЦІЯ</span><span>P&L / TP</span>
       </div>
       <div class="sig-list" id="sigList">
         <div class="sig-empty" id="sigEmpty">
           <div class="sig-empty-ico">🔍</div>
-          <div>Сигналов пока нет</div>
-          <div style="font-size:10px;color:var(--muted)">Ждём пересечений Smart Trail...</div>
+          <div>Сигналів поки немає</div>
+          <div style="font-size:10px;color:var(--muted)">Чекаємо перетинів Smart Trail...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="rpanel">
     <div class="rsec">
       <div class="rtitle">Stats 24h</div>
@@ -329,7 +301,7 @@ canvas{display:block;position:absolute;left:0}
 </div>
 
 <script>
-// ═══ PAIRS ═══
+// ═══ CONFIG ═══
 const PAIRS=[
   'ORDIUSDT','DOTUSDT','ZECUSDT','LTCUSDT','1000PEPEUSDT',
   'DYDXUSDT','ARBUSDT','XRPUSDT','SUIUSDT','AAVEUSDT',
@@ -338,11 +310,11 @@ const PAIRS=[
   'ENAUSDT','NEARUSDT','HYPEUSDT'
 ];
 const TF_LIM={'1m':500,'5m':500,'15m':300,'1h':300,'4h':200,'1d':200};
-const TP=[3.5,5.0,7.0,11.0]; const SL_PCT=8.5;
-const USER_BALANCE_DEFAULT=100; // USDT, можно изменить
+const TP=[3.5,5.0,7.0,11.0];
+const SL_PCT=8.5;
+const PL=70,PR=60,PT=18,PB=24; // chart padding constants
 
-// ═══ ACTIVE TRADES TRACKER ═══
-// {pair: {side, sl, tp4, tp1, tp2, tp3, entry, status:'active'|'tp1'|'tp2'|'tp3'|'tp4'|'sl'}}
+// ═══ ACTIVE TRADES ═══
 const activeTrades={};
 
 // ═══ PIVOT ZONES ═══
@@ -361,46 +333,43 @@ function calcPivots(cs,len=5){
   return{ph:lastPH,pl:lastPL};
 }
 
-// ═══ POSITION SIZE ═══
 function calcPosition(entry,sl,balance){
-  const risk=balance*0.03; // 3% риска
+  const risk=balance*0.03;
   const dist=Math.abs(entry-sl);
   if(!dist)return{tokens:0,value:0};
   const tokens=risk/dist;
   return{tokens,value:tokens*entry};
 }
 
-// ═══ PRESETS ═══
-const PRESETS={
-  'Нет':       {sens:5, atr:10},
-  'Scalper':   {sens:2, atr:5},
-  'Swing Trader': {sens:8, atr:14},
-  'Trend Trader': {sens:5, atr:10}
-};
-
 // ═══ STATE ═══
 const S={
   pair:'BTCUSDT',tf:'5m',candles:[],
-  prices:{},chgs:{},sigs:{},prevSigs:{},
+  prices:{},chgs:{},sigs:{},
   ind:{ema:true,bb:true,vol:true,trail:true},
+  // view state
   view:{vis:80,off:0},
-  drag:{on:false,x0:0,off0:0},
+  // interaction state — all pointer logic lives here
+  ptr:{
+    dragging:false,
+    startX:0,
+    startOff:0,
+    startVis:0,
+    startDist:0,
+    ids:[],          // active pointer ids in order
+    positions:{},    // pointerId -> {x,y}
+    lastVelX:0,      // for inertia
+    lastTimestamp:0,
+    inertiaRaf:null,
+  },
   mouse:{x:0,y:0,in:false},
   ws:null,wob:null,ob:{asks:[],bids:[]},
   signals:[],
   sigFilter:'all',
-  // Smart Signal Pro settings
-  cfg:{
-    preset:'Trend Trader',
-    sens:5,
-    atrPeriod:10,
-    showQuality:true,
-    sessions:false,
-    sigInSession:false,
-    nyFrom:'13:00',nyTo:'22:00',
-    ldFrom:'07:00',ldTo:'16:00',
-    balance:100,
-  }
+  cfg:{sens:5,atrPeriod:10,balance:100},
+  _loadingMore:false,
+  _pivots:{ph:null,pl:null},
+  _trail:[],
+  _drawRaf:null,
 };
 
 // ═══ MATH ═══
@@ -464,38 +433,23 @@ function calcBB(d,p=20,mul=2){
     return{u:mean+mul*std,m:mean,l:mean-mul*std};
   });
 }
-function inSession(ts){
-  if(!S.cfg.sessions)return true;
-  const d=new Date(ts);
-  const hm=d.getUTCHours()*60+d.getUTCMinutes();
-  const parse=s=>{const[h,m]=s.split(':').map(Number);return h*60+m;};
-  const nyF=parse(S.cfg.nyFrom),nyT=parse(S.cfg.nyTo);
-  const ldF=parse(S.cfg.ldFrom),ldT=parse(S.cfg.ldTo);
-  return(hm>=nyF&&hm<=nyT)||(hm>=ldF&&hm<=ldT);
-}
 function smartSig(cs){
   if(cs.length<30)return{sig:'NEUTRAL',stars:'☆☆☆☆',bpct:.5,trail:null,rsiV:50,macdV:null,buy:false,sell:false,quality:1,ph:null,pl:null};
   const cl=cs.map(c=>c.c),tr=calcTrail(cs),r=calcRSI(cl),{m:md,sig:sg}=calcMACD(cl),a=calcATR(cs,S.cfg.atrPeriod);
   const i=cs.length-1;
   const src=cl[i],t=tr[i],tp=tr[i-1],sp=cl[i-1];
-  let buy=sp<=tp&&src>t,sell=sp>=tp&&src<t;
-  if(S.cfg.sessions&&S.cfg.sigInSession){if(!inSession(cs[i].t)){buy=false;sell=false;}}
-
-  // ── AI Classifier (same logic as Python bot) ──
+  const buy=sp<=tp&&src>t,sell=sp>=tp&&src<t;
   const vols=cs.slice(-21).map(c=>c.v);
   const vma=vols.slice(0,-1).reduce((a,b)=>a+b,0)/20;
   const vs=vols[20]>vma*2?2:vols[20]>vma*1.5?1:0;
   const ama=a.filter(v=>v!=null).slice(-20).reduce((a,b)=>a+b,0)/20;
   const atrScore=(a[i]||0)>ama?1:0;
-
-  // Pivot zone score (from Python: close within 2% of pivot)
   const {ph,pl}=calcPivots(cs);
   let zoneScore=0;
   if(buy  && pl && Math.abs(src-pl)/src<0.02) zoneScore=1;
   if(sell && ph && Math.abs(src-ph)/src<0.02) zoneScore=1;
-
   const q=Math.min(vs+atrScore+zoneScore+1,4);
-  const stars=S.cfg.showQuality?('★'.repeat(q)+'☆'.repeat(4-q)):'';
+  const stars='★'.repeat(q)+'☆'.repeat(4-q);
   let bull=0,bear=0;
   if(src>t)bull+=2;else bear+=2;
   const lr=r[i];if(lr<40)bull+=2;else if(lr>60)bear+=2;
@@ -568,12 +522,10 @@ function switchTab(name,el){
   document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('pane'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('on');
-  if(name==='signals'){
-    const b=document.getElementById('sigBadge');b.style.display='none';
-  }
+  if(name==='signals'){const b=document.getElementById('sigBadge');b.style.display='none';}
 }
 
-// ═══ SIGNAL MANAGEMENT ═══
+// ═══ SIGNALS ═══
 let sigFilter='all';
 function setSigFilter(f,btn){
   sigFilter=f;
@@ -581,34 +533,25 @@ function setSigFilter(f,btn){
   btn.classList.add('on');
   renderSigList();
 }
-function clearSignals(){
-  S.signals=[];renderSigList();
-}
+function clearSignals(){S.signals=[];renderSigList();}
+
 function addSignal(pair,type,price,stars,quality,ph,pl){
   const now=Date.now();
   const recent=S.signals.find(s=>s.pair===pair&&s.type===type&&now-s.time<60000);
   if(recent)return;
-
   const mult=type==='BUY'?1:-1;
   const sl  =price*(1-mult*SL_PCT/100);
   const tp1 =price*(1+mult*TP[0]/100);
   const tp2 =price*(1+mult*TP[1]/100);
   const tp3 =price*(1+mult*TP[2]/100);
   const tp4 =price*(1+mult*TP[3]/100);
-  const bal =S.cfg.balance||USER_BALANCE_DEFAULT;
-  const pos =calcPosition(price,sl,bal);
-
+  const pos =calcPosition(price,sl,S.cfg.balance||100);
   const sig={pair,type,price,stars,quality,time:now,entryPrice:price,id:now,
-    sl,tp1,tp2,tp3,tp4,ph,pl,
-    posTokens:pos.tokens,posValue:pos.value,
+    sl,tp1,tp2,tp3,tp4,ph,pl,posTokens:pos.tokens,posValue:pos.value,
     pnl:null,status:'active',hitTp:0};
-
   S.signals.unshift(sig);
   if(S.signals.length>100)S.signals.pop();
-
-  // Register in active trades tracker
   activeTrades[pair]={side:type,sl,tp1,tp2,tp3,tp4,entry:price,hitTp:0};
-
   renderSigList();
   showToast(sig);
   const b=document.getElementById('sigBadge');
@@ -618,7 +561,6 @@ function addSignal(pair,type,price,stars,quality,ph,pl){
   }
 }
 function updSigPnl(pair,currentPrice){
-  // Check active trade TP/SL hits
   const at=activeTrades[pair];
   if(at){
     if(at.side==='BUY'){
@@ -636,13 +578,11 @@ function updSigPnl(pair,currentPrice){
     }
     if(at.closed)delete activeTrades[pair];
   }
-
   S.signals.filter(s=>s.pair===pair).forEach(s=>{
     s.currentPrice=currentPrice;
     const pct=(currentPrice-s.entryPrice)/s.entryPrice*100*(s.type==='SELL'?-1:1);
     s.pnl=pct;
-    // update hitTp status
-    if(activeTrades[pair]) s.hitTp=activeTrades[pair].hitTp||0;
+    if(activeTrades[pair])s.hitTp=activeTrades[pair].hitTp||0;
     const el=document.getElementById(`spnl-${s.id}`);
     if(!el)return;
     el.textContent=(s.pnl>=0?'+':'')+s.pnl.toFixed(2)+'%';
@@ -655,7 +595,7 @@ function notifyTPHit(pair,tpN,price){
   div.className='toast BUY';
   div.innerHTML=`<span class="toast-x" onclick="this.parentElement.remove()">✕</span>
     <div class="toast-emoji">🎯</div>
-    <div class="toast-title" style="color:var(--green)">TP${tpN} ДОСТИГНУТ!</div>
+    <div class="toast-title" style="color:var(--green)">TP${tpN} ДОСЯГНУТО!</div>
     <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
     <div class="toast-detail">+${pct}% → ${fmt(price)}</div>
     <div class="toast-bar"></div>`;
@@ -670,7 +610,7 @@ function notifySLHit(pair,price){
     <div class="toast-emoji">🛑</div>
     <div class="toast-title" style="color:var(--red)">СТОП-ЛОСС</div>
     <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
-    <div class="toast-detail">SL сработал → ${fmt(price)}</div>
+    <div class="toast-detail">SL спрацював → ${fmt(price)}</div>
     <div class="toast-bar"></div>`;
   document.getElementById('toastwrap').prepend(div);
   playBeep('SELL');
@@ -681,7 +621,7 @@ function renderSigList(){
   let filtered=S.signals;
   if(sigFilter==='buy')filtered=S.signals.filter(s=>s.type==='BUY');
   else if(sigFilter==='sell')filtered=S.signals.filter(s=>s.type==='SELL');
-  set('sigCountLabel',filtered.length+' сигналов');
+  set('sigCountLabel',filtered.length+' сигналів');
   if(!filtered.length){
     list.innerHTML='';
     const emp=document.getElementById('sigEmpty')||createEmpty();
@@ -690,7 +630,6 @@ function renderSigList(){
   }
   const emp=document.getElementById('sigEmpty');
   if(emp)emp.style.display='none';
-
   list.innerHTML=filtered.map((s,idx)=>{
     const ago=fmtAgo(s.time);
     const pnlStr=s.pnl!=null?(s.pnl>=0?'+':'')+s.pnl.toFixed(2)+'%':'—';
@@ -700,23 +639,15 @@ function renderSigList(){
     const tpDots=[1,2,3,4].map(n=>`<span style="color:${(s.hitTp||0)>=n?'var(--green)':'var(--border)'}">●</span>`).join('');
     const slHit=s.pnl!=null&&s.pnl<-SL_PCT*0.9;
     return`<div class="sig-item${idx===0&&Date.now()-s.time<3000?' fresh':''}" onclick="pick('${s.pair}')">
-      <div>
-        <div class="si-pair">${s.pair.replace('USDT','/USDT')} <span style="color:var(--gold);font-size:9px">${s.stars||''}</span></div>
-        <div class="si-time">${ago}</div>
-      </div>
+      <div><div class="si-pair">${s.pair.replace('USDT','/USDT')} <span style="color:var(--gold);font-size:9px">${s.stars||''}</span></div>
+      <div class="si-time">${ago}</div></div>
       <div><span class="si-type ${s.type}">${s.type}</span></div>
-      <div>
-        <div class="si-price">${fmt(s.entryPrice)}</div>
-        <div style="font-size:9px;color:var(--muted)">SL:${fmt(s.sl)}</div>
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--accent)">${posStr}</div>
-        <div style="font-size:9px;color:var(--muted)">${tokStr}</div>
-      </div>
-      <div>
-        <div class="si-pnl ${slHit?'neg':pnlCls}" id="spnl-${s.id}">${slHit?'🛑 SL':pnlStr}</div>
-        <div style="font-size:11px;letter-spacing:1px;margin-top:2px">${tpDots}</div>
-      </div>
+      <div><div class="si-price">${fmt(s.entryPrice)}</div>
+      <div style="font-size:9px;color:var(--muted)">SL:${fmt(s.sl)}</div></div>
+      <div><div style="font-size:10px;color:var(--accent)">${posStr}</div>
+      <div style="font-size:9px;color:var(--muted)">${tokStr}</div></div>
+      <div><div class="si-pnl ${slHit?'neg':pnlCls}" id="spnl-${s.id}">${slHit?'🛑 SL':pnlStr}</div>
+      <div style="font-size:11px;letter-spacing:1px;margin-top:2px">${tpDots}</div></div>
     </div>`;
   }).join('');
 }
@@ -726,6 +657,19 @@ function fmtTokens(n){
   if(n>=0.01)return n.toFixed(4);
   return n.toFixed(6);
 }
+function createEmpty(){
+  const d=document.createElement('div');d.className='sig-empty';d.id='sigEmpty';
+  d.innerHTML='<div class="sig-empty-ico">🔍</div><div>Сигналів поки немає</div><div style="font-size:10px;color:var(--muted)">Чекаємо перетинів Smart Trail...</div>';
+  return d;
+}
+function fmtAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60)return s+'с назад';
+  if(s<3600)return Math.floor(s/60)+'хв назад';
+  return Math.floor(s/3600)+'г назад';
+}
+
+// ═══ SETTINGS ═══
 function openSettings(){
   document.getElementById('cfgBalance').value=S.cfg.balance||100;
   document.getElementById('cfgSens').value=S.cfg.sens||5;
@@ -737,24 +681,21 @@ function applySettings(){
   S.cfg.balance=+document.getElementById('cfgBalance').value||100;
   S.cfg.sens=+document.getElementById('cfgSens').value||5;
   S.cfg.atrPeriod=+document.getElementById('cfgAtr').value||10;
+  S._trail=calcTrail(S.candles);
   closeSettings();renderAll();
 }
 
 // ═══ PRICE ALERTS ═══
-const alerts=[]; // {id, pair, price, dir:'above'|'below', created}
-
+const alerts=[];
 function openAlerts(){
   const m=document.getElementById('alertsModal');
-  // Populate pair select
   const sel=document.getElementById('alPair');
   sel.innerHTML=PAIRS.map(p=>`<option value="${p}"${p===S.pair?' selected':''}>${p.replace('USDT','/USDT')}</option>`).join('');
-  // Show current price
   document.getElementById('alCurPrice').textContent=fmt(S.prices[S.pair]||0);
   renderAlertList();
   m.style.display='flex';
 }
 function closeAlerts(){document.getElementById('alertsModal').style.display='none';}
-
 function addAlert(){
   const pair=document.getElementById('alPair').value;
   const price=+document.getElementById('alPrice').value;
@@ -762,22 +703,18 @@ function addAlert(){
   if(!price||isNaN(price)){document.getElementById('alPrice').style.borderColor='#ff3a6e';setTimeout(()=>document.getElementById('alPrice').style.borderColor='#1e2a38',1200);return;}
   alerts.push({id:Date.now(),pair,price,dir,created:Date.now()});
   document.getElementById('alPrice').value='';
-  renderAlertList();
-  updAlertBadge();
+  renderAlertList();updAlertBadge();
 }
-
 function removeAlert(id){
   const i=alerts.findIndex(a=>a.id===id);
   if(i>=0)alerts.splice(i,1);
   renderAlertList();updAlertBadge();
 }
-
 function renderAlertList(){
   const list=document.getElementById('alertList');
   const empty=document.getElementById('alertEmpty');
   if(!alerts.length){empty.style.display='block';list.innerHTML='';list.appendChild(empty);return;}
   empty.style.display='none';
-  // Sort: current pair first, then by pair name
   const sorted=[...alerts].sort((a,b)=>(b.pair===S.pair)-(a.pair===S.pair)||a.pair.localeCompare(b.pair));
   list.innerHTML=sorted.map(a=>{
     const cur=S.prices[a.pair]||0;
@@ -785,28 +722,21 @@ function renderAlertList(){
     const distStr=dist?(+dist>=0?`+${dist}%`:`${dist}%`):'—';
     const distCol=dist?(Math.abs(+dist)<1?'#ffd54f':+dist>0?'#00e676':'#ff3a6e'):'#4a6070';
     return`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:8px 10px;background:#111820;border-radius:4px;border:1px solid #1e2a38">
-      <div>
-        <div style="font-size:11px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div>
-        <div style="font-size:10px;margin-top:2px">
-          <span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Выше':'↓ Ниже'}</span>
-          <span style="color:#c8d8e8;margin-left:6px">${fmt(a.price)}</span>
-        </div>
-      </div>
+      <div><div style="font-size:11px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div>
+      <div style="font-size:10px;margin-top:2px"><span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Вище':'↓ Нижче'}</span>
+      <span style="color:#c8d8e8;margin-left:6px">${fmt(a.price)}</span></div></div>
       <div style="font-size:10px;color:${distCol};text-align:right">${distStr}</div>
       <div style="font-size:10px;color:#4a6070">${fmtAgo(a.created)}</div>
       <button onclick="removeAlert(${a.id})" style="background:transparent;border:1px solid #1e2a38;color:#ff3a6e;padding:3px 7px;font-size:11px;border-radius:3px;cursor:pointer;font-family:inherit">✕</button>
     </div>`;
   }).join('');
-  // Re-append empty div so it can be reused
   if(!list.contains(document.getElementById('alertEmpty')))list.appendChild(document.getElementById('alertEmpty'));
 }
-
 function updAlertBadge(){
   const el=document.getElementById('alertCount');
   el.textContent=alerts.length?alerts.length:'';
   el.style.color=alerts.length?'#ffd54f':'';
 }
-
 function checkAlerts(pair,price){
   if(!price||!alerts.length)return;
   const fired=[];
@@ -815,15 +745,12 @@ function checkAlerts(pair,price){
     if(a.pair!==pair)continue;
     const hit=(a.dir==='above'&&price>=a.price)||(a.dir==='below'&&price<=a.price);
     if(!hit)continue;
-    fired.push(a);
-    alerts.splice(i,1);
+    fired.push(a);alerts.splice(i,1);
   }
   fired.forEach(a=>fireAlert(a,price));
   if(fired.length){updAlertBadge();renderAlertList();}
 }
-
 function fireAlert(a,price){
-  // Sound — distinct double beep
   try{
     const ac=new AudioContext();
     [0,0.18].forEach(t=>{
@@ -834,71 +761,52 @@ function fireAlert(a,price){
       o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.25);
     });
   }catch(e){}
-  // Toast
   const wrap=document.getElementById('toastwrap');
   const div=document.createElement('div');
-  div.className='toast BUY';
-  div.style.borderColor='#ffd54f';
-  div.innerHTML=`
-    <span class="toast-x" onclick="this.parentElement.remove()">✕</span>
+  div.className='toast BUY';div.style.borderColor='#ffd54f';
+  div.innerHTML=`<span class="toast-x" onclick="this.parentElement.remove()">✕</span>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <div style="font-size:26px">🔔</div>
-      <div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#ffd54f;letter-spacing:1px">PRICE ALERT!</div>
-        <div style="font-size:12px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div>
-      </div>
+      <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#ffd54f;letter-spacing:1px">PRICE ALERT!</div>
+      <div style="font-size:12px;color:#c8d8e8;font-weight:700">${a.pair.replace('USDT','/USDT')}</div></div>
     </div>
     <div style="font-size:11px;line-height:1.8;color:#c8d8e8">
-      <span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Цена поднялась выше':'↓ Цена упала ниже'}</span> <b>${fmt(a.price)}</b><br>
-      Текущая цена: <b style="color:#00e5ff">${fmt(price)}</b>
+      <span style="color:${a.dir==='above'?'#00e676':'#ff3a6e'}">${a.dir==='above'?'↑ Ціна піднялась вище':'↓ Ціна впала нижче'}</span> <b>${fmt(a.price)}</b><br>
+      Поточна ціна: <b style="color:#00e5ff">${fmt(price)}</b>
     </div>
     <div class="toast-bar" style="background:#ffd54f"></div>`;
   div.onclick=e=>{if(!e.target.classList.contains('toast-x')){pick(a.pair);closeAlerts();}};
   wrap.prepend(div);
   setTimeout(()=>{div.style.animation='tout .35s ease forwards';setTimeout(()=>div.remove(),350);},8000);
-  // Draw alert line on chart
-  if(a.pair===S.pair) drawMain();
-}
-function createEmpty(){
-  const d=document.createElement('div');d.className='sig-empty';d.id='sigEmpty';
-  d.innerHTML='<div class="sig-empty-ico">🔍</div><div>Сигналов пока нет</div><div style="font-size:10px;color:var(--muted)">Ждём пересечений Smart Trail...</div>';
-  return d;
-}
-function fmtAgo(ts){
-  const s=Math.floor((Date.now()-ts)/1000);
-  if(s<60)return s+'с назад';
-  if(s<3600)return Math.floor(s/60)+'м назад';
-  return Math.floor(s/3600)+'ч назад';
+  if(a.pair===S.pair)scheduleDraw();
 }
 
 // ═══ TOAST ═══
 const TOAST_MSGS={
-  BUY:['🚀 ЛЕТИМ В ЛОНГ!','🔥 BUY СИГНАЛ!','💚 ЗЕЛЁНЫЙ СВЕТ!','⬆️ ПОКУПАЕМ!','🎯 ТОЧКА ВХОДА!'],
-  SELL:['🔴 ШОРТ СИГНАЛ!','📉 ПРОДАЁМ!','⬇️ В ШОРТ!','🩸 МЕДВЕДИ РУЛЯТ','🎯 ТОЧКА ВХОДА ШОРТ']
+  BUY:['🚀 ЛЕТИМО В ЛОНГ!','🔥 BUY СИГНАЛ!','💚 ЗЕЛЕНЕ СВІТЛО!','⬆️ КУПУЄМО!','🎯 ТОЧКА ВХОДУ!'],
+  SELL:['🔴 ШОРТ СИГНАЛ!','📉 ПРОДАЄМО!','⬇️ В ШОРТ!','🩸 ВЕДМЕДІ РУЛЯТЬ','🎯 ТОЧКА ВХОДУ ШОРТ']
 };
 function showToast(sig){
-  const{pair,type,entryPrice,stars,quality,sl,tp1,tp2,tp3,tp4,posValue,posTokens,ph,pl}=sig;
+  const{pair,type,entryPrice,stars,sl,tp1,tp2,tp3,tp4,posValue,posTokens,ph,pl}=sig;
   const wrap=document.getElementById('toastwrap');
   const msgs=TOAST_MSGS[type];
   const title=msgs[Math.floor(Math.random()*msgs.length)];
   const div=document.createElement('div');
   div.className=`toast ${type}`;
   const zoneStr=type==='BUY'
-    ?(pl?`📐 Поддержка: ${fmt(pl)}`:'')
-    :(ph?`📐 Сопротивление: ${fmt(ph)}`:'');
-  const posStr=posValue?`💵 Позиция: <b>${posValue.toFixed(1)} USDT</b> (${fmtTokens(posTokens)} монет)`:'' ;
+    ?(pl?`📐 Підтримка: ${fmt(pl)}`:'')
+    :(ph?`📐 Опір: ${fmt(ph)}`:'');
+  const posStr=posValue?`💵 Позиція: <b>${posValue.toFixed(1)} USDT</b> (${fmtTokens(posTokens)} монет)`:'';
   div.innerHTML=`
     <span class="toast-x" onclick="this.parentElement.remove()">✕</span>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <div style="font-size:24px">${type==='BUY'?'🚀':'📉'}</div>
-      <div>
-        <div class="toast-title">${title}</div>
-        <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
-      </div>
+      <div><div class="toast-title">${title}</div>
+      <div class="toast-pair">${pair.replace('USDT','/USDT')}</div></div>
       <div class="toast-stars" style="margin-left:auto">${stars}</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:11px;line-height:1.7">
-      <span style="color:var(--muted)">Вход:</span><span><b>${fmt(entryPrice)}</b></span>
+      <span style="color:var(--muted)">Вхід:</span><span><b>${fmt(entryPrice)}</b></span>
       <span style="color:var(--red)">SL (${SL_PCT}%):</span><span style="color:var(--red)">${fmt(sl)}</span>
       <span style="color:var(--green)">TP1 (${TP[0]}%):</span><span style="color:var(--green)">${fmt(tp1)}</span>
       <span style="color:var(--green)">TP2 (${TP[1]}%):</span><span style="color:var(--green)">${fmt(tp2)}</span>
@@ -943,6 +851,8 @@ async function pick(p){
   try{
     S.candles=await fetchKlines(p,S.tf);
     S.view.vis=Math.min(80,S.candles.length);S.view.off=0;
+    S._pivots=calcPivots(S.candles);
+    S._trail=calcTrail(S.candles);
     await fetchTicker(p);
     renderAll();
     document.getElementById('loader').style.display='none';
@@ -956,11 +866,13 @@ function setTF(btn,tf){
   if(S.ws){try{S.ws.close()}catch(e){}}S.ws=null;
   fetchKlines(S.pair,tf).then(d=>{
     S.candles=d;S.view.vis=Math.min(80,d.length);S.view.off=0;
+    S._pivots=calcPivots(d);
+    S._trail=calcTrail(d);
     renderAll();document.getElementById('loader').style.display='none';
     connectWS(S.pair,tf);
   }).catch(()=>{document.getElementById('loader').style.display='none'});
 }
-function tog(name,btn){S.ind[name]=!S.ind[name];btn.classList.toggle('on',S.ind[name]);drawMain()}
+function tog(name,btn){S.ind[name]=!S.ind[name];btn.classList.toggle('on',S.ind[name]);scheduleDraw();}
 
 // ═══ HEADER ═══
 function updHeader(){
@@ -977,18 +889,27 @@ function updOhlc(c){
     `<span>O:${fmt(c.o)}</span><span class="up">H:${fmt(c.h)}</span><span class="dn">L:${fmt(c.l)}</span><span>C:${fmt(c.c)}</span><span style="color:var(--muted)">V:${fmtV(c.v)}</span>`;
 }
 
+// ═══ RAF SCHEDULER — throttle redraws ═══
+function scheduleDraw(){
+  if(S._drawRaf)return;
+  S._drawRaf=requestAnimationFrame(()=>{
+    S._drawRaf=null;
+    drawMain();drawRSI();drawMACD();
+  });
+}
+function scheduleRenderAll(){
+  if(S._drawRaf)cancelAnimationFrame(S._drawRaf);
+  S._drawRaf=requestAnimationFrame(()=>{S._drawRaf=null;renderAll();});
+}
+
 // ═══ RENDER ALL ═══
 function renderAll(){
   const cv=getView();if(!cv.length)return;
   updOhlc(cv[cv.length-1]);
-  // Cache expensive calculations for drawMain to reuse
-  S._pivots=calcPivots(S.candles);
-  S._trail=calcTrail(S.candles);
   drawMain();drawRSI();drawMACD();
   const res=smartSig(S.candles);
   const prevSig=S.sigs[S.pair];
   S.sigs[S.pair]=res.sig;updRow(S.pair);
-  // fire signal event if new crossover
   if((res.buy||res.sell)&&res.sig!=='NEUTRAL'&&prevSig!==res.sig){
     addSignal(S.pair,res.sig,S.candles.at(-1).c,res.stars,res.quality,res.ph,res.pl);
   }
@@ -1009,23 +930,28 @@ function renderAll(){
   document.getElementById('stars').textContent=res.stars;
 }
 
-// ═══ DRAW MAIN ═══
-function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+// ═══ ROUNDED RECT HELPER ═══
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
 
+// ═══ DRAW MAIN — complete rewrite for correctness ═══
 function drawMain(){
   const cs=getView();if(!cs.length)return;
   const box=document.getElementById('mainbox'),cv=document.getElementById('cvMain');
   const W=box.clientWidth,H=box.clientHeight;
+  if(!W||!H)return;
   cv.width=W;cv.height=H;cv.style.top='0';
   const ctx=cv.getContext('2d');
   ctx.clearRect(0,0,W,H);
   const n=cs.length;
-  const PL=70,PR=60,PT=18,PB=24;
   const CW=W-PL-PR,CH=H-PT-PB;
   const slot=CW/n,bw=Math.max(1.5,slot*.72-1);
   const cl=cs.map(c=>c.c);
 
-  // Price range based ONLY on candles — no TP/SL distortion
+  // Price range
   const rawMin=Math.min(...cs.map(c=>c.l));
   const rawMax=Math.max(...cs.map(c=>c.h));
   const pad=(rawMax-rawMin)*0.08;
@@ -1044,9 +970,9 @@ function drawMain(){
     ctx.fillText(fmt(maxP-rng/5*i),PL-3,y+3);
   }
 
-  // Volume
+  // Volume bars
   if(S.ind.vol){
-    const vs=cs.map(c=>c.v),mv=Math.max(...vs),vh=CH*.18;
+    const vs=cs.map(c=>c.v),mv=Math.max(...vs)||1,vh=CH*.18;
     cs.forEach((c,i)=>{
       const h=(c.v/mv)*vh;
       ctx.fillStyle=c.c>=c.o?'rgba(0,230,118,.13)':'rgba(255,58,110,.13)';
@@ -1054,33 +980,33 @@ function drawMain(){
     });
   }
 
-  // BB
+  // Bollinger Bands
   if(S.ind.bb){
     const B=calcBB(cl);
-    const dl=(arr,col,dash)=>{
+    const drawLine=(arr,col,dash)=>{
       ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash(dash?[4,4]:[]);
       let s=false;arr.forEach((v,i)=>{if(!v)return;s?ctx.lineTo(tx(i),ty(v)):ctx.moveTo(tx(i),ty(v));s=true;});
       ctx.stroke();ctx.setLineDash([]);
     };
-    dl(B.map(v=>v?.u),'rgba(0,229,255,.32)',false);
-    dl(B.map(v=>v?.l),'rgba(0,229,255,.32)',false);
-    dl(B.map(v=>v?.m),'rgba(0,229,255,.14)',true);
+    drawLine(B.map(v=>v?.u),'rgba(0,229,255,.32)',false);
+    drawLine(B.map(v=>v?.l),'rgba(0,229,255,.32)',false);
+    drawLine(B.map(v=>v?.m),'rgba(0,229,255,.14)',true);
     ctx.beginPath();let s2=false;
     B.forEach((v,i)=>{if(!v)return;s2?ctx.lineTo(tx(i),ty(v.u)):ctx.moveTo(tx(i),ty(v.u));s2=true;});
     [...B].reverse().forEach((v,ri)=>{if(!v)return;ctx.lineTo(tx(n-1-ri),ty(v.l));});
     ctx.closePath();ctx.fillStyle='rgba(0,229,255,.03)';ctx.fill();
   }
 
-  // EMA
+  // EMA lines
   if(S.ind.ema){
-    const de=(p,col)=>{
+    const drawEMA=(p,col)=>{
       const e=calcEMA(cl,p);ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.setLineDash([]);
       let s=false;e.forEach((v,i)=>{if(v==null)return;s?ctx.lineTo(tx(i),ty(v)):ctx.moveTo(tx(i),ty(v));s=true;});ctx.stroke();
     };
-    de(20,'#ffd54f');de(50,'#ff7043');
+    drawEMA(20,'#ffd54f');drawEMA(50,'#ff7043');
   }
 
-  // ── PIVOT ZONES (Support / Resistance) — use cached value ──
+  // Pivot zones
   {
     const {ph,pl}=S._pivots||{ph:null,pl:null};
     const drawZone=(price,color,label)=>{
@@ -1098,15 +1024,14 @@ function drawMain(){
     drawZone(pl,'rgba(80,200,120,.55)','S');
   }
 
-  // Smart Trail + arrows + TP/SL lines
+  // ── Smart Trail + signals ──
   if(S.ind.trail){
-    // Use cached full trail, slice to visible view range
-    const fullTrail=S._trail||calcTrail(S.candles);
     const totalN=S.candles.length;
     const vis=S.view.vis,off=S.view.off;
-    const startIdx=totalN-vis-off;
-    const tr=fullTrail.slice(startIdx,startIdx+n);
-    // Trail line
+    const startIdx=Math.max(0,totalN-vis-off);
+    const tr=S._trail.slice(startIdx,startIdx+n);
+
+    // Draw trail line segments (colored by price vs trail)
     ctx.lineWidth=2;ctx.setLineDash([]);
     for(let i=1;i<n;i++){
       if(tr[i]==null||tr[i-1]==null)continue;
@@ -1114,61 +1039,97 @@ function drawMain(){
       ctx.beginPath();ctx.moveTo(tx(i-1),ty(tr[i-1]));ctx.lineTo(tx(i),ty(tr[i]));ctx.stroke();
     }
 
-    // Find ALL signals in visible range, draw flags; find LAST signal for TP/SL
-    let lastSigIdx=-1,lastSigBuy=false;
+    // ── Collect all signal positions in visible range ──
+    // We deduplicate flags so they don't stack on top of each other.
+    // Strategy: per candle, at most one flag. If buy & sell on same candle (impossible by logic but safe),
+    // prefer the more recent crossover direction.
+    const flagEvents=[]; // {i, buy}
     for(let i=1;i<n;i++){
       if(tr[i]==null||tr[i-1]==null)continue;
       const buy=cs[i-1].c<=tr[i-1]&&cs[i].c>tr[i];
       const sell=cs[i-1].c>=tr[i-1]&&cs[i].c<tr[i];
-      if(!buy&&!sell)continue;
-      lastSigIdx=i;lastSigBuy=buy;
-
-      const x=tx(i);
-      const col=buy?'#00e676':'#ff3a6e';
-      const glow=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
-      const baseY=buy?ty(cs[i].l):ty(cs[i].h);
-      const dir=buy?-1:1; // -1 = upward, 1 = downward
-      const label=buy?'BUY':'SELL';
-      const stemH=slot>12?40:28; // bigger flag when candles are wider
-
-      ctx.save();
-      ctx.shadowColor=glow;ctx.shadowBlur=16;
-
-      // ── Stem ──
-      ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash([]);
-      ctx.beginPath();ctx.moveTo(x,baseY);ctx.lineTo(x,baseY+dir*stemH);ctx.stroke();
-
-      // ── Circle at candle ──
-      ctx.beginPath();ctx.arc(x,baseY,5,0,Math.PI*2);
-      ctx.fillStyle=col;ctx.fill();
-
-      // ── Flag body ──
-      const flagW=slot>12?52:38;
-      const flagH=slot>12?22:17;
-      const flagX=x+2; // flag extends to the right of stem
-      const flagY=baseY+dir*stemH+(dir>0?0:-flagH);
-
-      // Flag background
-      ctx.fillStyle=col;
-      rr(ctx,flagX,flagY,flagW,flagH,4);ctx.fill();
-
-      // Flag shine overlay
-      const grad=ctx.createLinearGradient(flagX,flagY,flagX,flagY+flagH);
-      grad.addColorStop(0,'rgba(255,255,255,.2)');grad.addColorStop(1,'rgba(0,0,0,.1)');
-      ctx.fillStyle=grad;
-      rr(ctx,flagX,flagY,flagW,flagH,4);ctx.fill();
-
-      // Flag text
-      ctx.shadowBlur=0;
-      ctx.fillStyle=buy?'#002210':'#200008';
-      ctx.textAlign='center';
-      ctx.font=`bold ${slot>12?12:10}px Syne,sans-serif`;
-      ctx.fillText(label,flagX+flagW/2,flagY+flagH/2+4);
-
-      ctx.restore();
+      if(buy)flagEvents.push({i,buy:true});
+      else if(sell)flagEvents.push({i,buy:false});
     }
 
-    // TP/SL only from LAST signal
+    // ── Anti-collision: compute y offsets so flags don't overlap ──
+    // For each flag, calculate desired anchor y; then push apart any that are too close
+    const flagH=18;
+    const flagW=slot>12?54:38;
+    const minGapY=flagH+4;
+
+    // First pass: assign natural positions
+    const flags=flagEvents.map(e=>{
+      const x=tx(e.i);
+      const anchorY=e.buy?ty(cs[e.i].l):ty(cs[e.i].h);
+      const stemH=e.buy?-32:32;
+      const flagTopY=e.buy?(anchorY+stemH-flagH):(anchorY+stemH);
+      return{...e,x,anchorY,stemH,flagTopY,finalFlagTopY:flagTopY};
+    });
+
+    // Second pass: resolve vertical collisions (same direction flags close in x)
+    for(let a=0;a<flags.length;a++){
+      for(let b=a+1;b<flags.length;b++){
+        const fa=flags[a],fb=flags[b];
+        if(Math.abs(fa.x-fb.x)>flagW*1.5)continue; // too far apart horizontally
+        if(fa.buy!==fb.buy)continue; // different direction, skip collision for now
+        const overlap=minGapY-(Math.abs(fa.finalFlagTopY-fb.finalFlagTopY));
+        if(overlap>0){
+          // Push the later one further in the flag direction
+          if(fb.buy)fb.finalFlagTopY-=overlap;
+          else       fb.finalFlagTopY+=overlap;
+        }
+      }
+    }
+
+    // Third pass: draw flags (all but last)
+    let lastSigIdx=-1,lastSigBuy=false;
+    flags.forEach((f,fi)=>{
+      const{i,buy,x,anchorY,finalFlagTopY}=f;
+      const col=buy?'#00e676':'#ff3a6e';
+      const glow=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
+      const label=buy?'BUY':'SELL';
+      const flagTop=finalFlagTopY;
+      const stemEndY=buy?(flagTop+flagH):(flagTop);
+
+      ctx.save();
+      ctx.shadowColor=glow;ctx.shadowBlur=14;
+
+      // Stem
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(x,anchorY);ctx.lineTo(x,stemEndY);ctx.stroke();
+
+      // Dot at candle
+      ctx.beginPath();ctx.arc(x,anchorY,4,0,Math.PI*2);
+      ctx.fillStyle=col;ctx.fill();
+
+      // Flag bg
+      const fw=slot>12?54:38;
+      const fh=slot>12?18:14;
+      const flagX=x-fw/2; // CENTER the flag on the candle x for cleaner look
+      const flagY=flagTop;
+      ctx.fillStyle=col;
+      rr(ctx,flagX,flagY,fw,fh,3);ctx.fill();
+
+      // Flag shine
+      const grad=ctx.createLinearGradient(flagX,flagY,flagX,flagY+fh);
+      grad.addColorStop(0,'rgba(255,255,255,.22)');grad.addColorStop(1,'rgba(0,0,0,.12)');
+      ctx.fillStyle=grad;rr(ctx,flagX,flagY,fw,fh,3);ctx.fill();
+
+      // Label text
+      ctx.shadowBlur=0;
+      ctx.fillStyle=buy?'#001a0d':'#1a0006';
+      ctx.textAlign='center';
+      ctx.font=`bold ${slot>12?11:9}px Syne,sans-serif`;
+      ctx.fillText(label,flagX+fw/2,flagY+fh/2+4);
+
+      ctx.restore();
+
+      // Track last signal for TP/SL lines
+      lastSigIdx=i;lastSigBuy=buy;
+    });
+
+    // TP/SL lines from last signal only
     if(lastSigIdx>=0){
       const ep=cs[lastSigIdx].c;
       const mult=lastSigBuy?1:-1;
@@ -1176,35 +1137,27 @@ function drawMain(){
 
       const drawTPSL=(price,color,label,pct)=>{
         const lineY=ty(price);
-        // clamp label visibility but still draw line even if partially off
         ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([6,4]);
-        ctx.beginPath();
-        ctx.moveTo(sigX,Math.max(PT,Math.min(PT+CH,lineY)));
-        ctx.lineTo(W-PR,Math.max(PT,Math.min(PT+CH,lineY)));
-        ctx.stroke();ctx.setLineDash([]);
-
-        // only draw badge if line is within visible range
+        const clampY=Math.max(PT,Math.min(PT+CH,lineY));
+        ctx.beginPath();ctx.moveTo(sigX,clampY);ctx.lineTo(W-PR,clampY);ctx.stroke();
+        ctx.setLineDash([]);
         if(lineY>=PT-2&&lineY<=PT+CH+2){
           const bLabel=`${label} ${pct}%`;
           ctx.font='bold 9px Space Mono';
           const bw2=ctx.measureText(bLabel).width+10;
-          const bx=W-PR+2;
-          const by=lineY-8;
+          const bx=W-PR+2,by=lineY-8;
           ctx.fillStyle=label==='SL'?'#c0132a':'#00783a';
           rr(ctx,bx,by,bw2,16,3);ctx.fill();
           ctx.fillStyle='#fff';ctx.textAlign='left';
           ctx.fillText(bLabel,bx+5,lineY+4);
         }
       };
-
-      TP.forEach((t,idx)=>{
-        drawTPSL(ep*(1+mult*t/100),'rgba(0,230,118,.6)',`TP${idx+1}`,t);
-      });
+      TP.forEach((t,idx)=>drawTPSL(ep*(1+mult*t/100),'rgba(0,230,118,.6)',`TP${idx+1}`,t));
       drawTPSL(ep*(1-mult*SL_PCT/100),'rgba(255,58,110,.75)','SL',SL_PCT);
     }
   }
 
-  // Candles
+  // ── Candles (drawn on top of indicators) ──
   ctx.setLineDash([]);
   cs.forEach((c,i)=>{
     const up=c.c>=c.o,x=tx(i),oy=ty(c.o),cy2=ty(c.c),hy=ty(c.h),ly=ty(c.l);
@@ -1214,26 +1167,18 @@ function drawMain(){
     ctx.fillRect(x-bw/2,Math.min(oy,cy2),bw,Math.max(1.5,Math.abs(cy2-oy)));
   });
 
-  // ── RIGHT PRICE AXIS (TradingView style) ──
-  // Background strip
+  // ── Right price axis ──
   ctx.fillStyle='rgba(8,11,16,.92)';
   ctx.fillRect(W-PR,PT,PR,CH);
-
-  // Separator line
   ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=1;ctx.setLineDash([]);
   ctx.beginPath();ctx.moveTo(W-PR,PT);ctx.lineTo(W-PR,PT+CH);ctx.stroke();
-
-  // Price ticks — ~8 evenly spaced labels
   ctx.font='10px Space Mono';ctx.textAlign='left';ctx.fillStyle='#5a7080';
-  const tickCount=7;
-  for(let i=0;i<=tickCount;i++){
-    const price=minP+rng*(i/tickCount);
+  for(let i=0;i<=7;i++){
+    const price=minP+rng*(i/7);
     const y=ty(price);
     if(y<PT+4||y>PT+CH-4)continue;
-    // tick mark
     ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=.5;ctx.setLineDash([]);
     ctx.beginPath();ctx.moveTo(W-PR,y);ctx.lineTo(W-PR+4,y);ctx.stroke();
-    // label
     ctx.fillStyle='#5a7080';
     ctx.fillText(fmt(price),W-PR+7,y+4);
   }
@@ -1243,7 +1188,7 @@ function drawMain(){
   ctx.fillStyle='#4a6070';ctx.font='9px Space Mono';ctx.textAlign='center';ctx.setLineDash([]);
   for(let i=0;i<n;i+=step)ctx.fillText(fmtT(cs[i].t,S.tf),tx(i),H-5);
 
-  // ── CURRENT PRICE badge (cyan, like TradingView) ──
+  // Current price badge
   const lp=cs[n-1].c,lpy=ty(lp);
   ctx.strokeStyle='rgba(0,229,255,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
   ctx.beginPath();ctx.moveTo(PL,lpy);ctx.lineTo(W-PR,lpy);ctx.stroke();
@@ -1251,15 +1196,14 @@ function drawMain(){
   const lpTxt=fmt(lp);
   ctx.font='bold 10px Space Mono';
   const lpTw=ctx.measureText(lpTxt).width;
-  const badgeW=Math.max(lpTw+16, PR-2);
-  const badgeX=W-PR+1;
-  const badgeY=lpy-9;
+  const badgeW=Math.max(lpTw+16,PR-2);
+  const badgeX=W-PR+1,badgeY=lpy-9;
   ctx.fillStyle='#00e5ff';
   rr(ctx,badgeX,badgeY,badgeW,18,3);ctx.fill();
   ctx.fillStyle='#050d14';ctx.textAlign='left';
   ctx.fillText(lpTxt,badgeX+(badgeW-lpTw)/2,lpy+5);
 
-  // ── ALERT LINES ──
+  // Alert lines
   alerts.filter(a=>a.pair===S.pair).forEach(a=>{
     const ay=ty(a.price);
     if(ay<PT-4||ay>PT+CH+4)return;
@@ -1267,7 +1211,6 @@ function drawMain(){
     ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([5,4]);
     ctx.beginPath();ctx.moveTo(PL,ay);ctx.lineTo(W-PR,ay);ctx.stroke();
     ctx.setLineDash([]);
-    // badge on right axis
     const atxt=fmt(a.price);
     ctx.font='bold 9px Space Mono';
     const atw=ctx.measureText(atxt).width;
@@ -1278,22 +1221,19 @@ function drawMain(){
     rr(ctx,W-PR+1,ay-9,abw,18,3);ctx.stroke();
     ctx.fillStyle=col;ctx.textAlign='left';
     ctx.fillText(atxt,W-PR+1+(abw-atw)/2,ay+4);
-    // 🔔 icon left side
     ctx.font='11px sans-serif';ctx.textAlign='right';
     ctx.fillText('🔔',PL-2,ay+4);
   });
 
-  // ── CROSSHAIR ──
+  // Crosshair
   if(S.mouse.in){
     const mx=S.mouse.x,my=S.mouse.y;
     if(mx>PL&&mx<W-PR&&my>PT&&my<PT+CH){
-      // crosshair lines
       ctx.strokeStyle='rgba(200,216,232,.18)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
       ctx.beginPath();ctx.moveTo(mx,PT);ctx.lineTo(mx,PT+CH);ctx.stroke();
       ctx.beginPath();ctx.moveTo(PL,my);ctx.lineTo(W-PR,my);ctx.stroke();
       ctx.setLineDash([]);
 
-      // LEFT price label
       const hp=maxP-(my-PT)/CH*rng;
       ctx.fillStyle='#1a2535';ctx.fillRect(1,my-9,PL-4,18);
       ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=.5;
@@ -1301,7 +1241,6 @@ function drawMain(){
       ctx.fillStyle='#c8d8e8';ctx.font='9px Space Mono';ctx.textAlign='right';
       ctx.fillText(fmt(hp),PL-5,my+4);
 
-      // RIGHT price badge on axis (grey, like TradingView cursor price)
       const hpTxt=fmt(hp);
       ctx.font='bold 10px Space Mono';
       const hpTw=ctx.measureText(hpTxt).width;
@@ -1313,7 +1252,6 @@ function drawMain(){
       ctx.fillStyle='#c8d8e8';ctx.textAlign='left';
       ctx.fillText(hpTxt,W-PR+1+(cbW-hpTw)/2,my+5);
 
-      // bottom time label
       const ci=Math.min(n-1,Math.max(0,Math.floor((mx-PL)/slot)));
       const tl=fmtT(cs[ci].t,S.tf);
       const tw=ctx.measureText(tl).width+10;
@@ -1331,6 +1269,7 @@ function drawRSI(){
   const cs=getView();if(!cs.length)return;
   const box=document.getElementById('rsibox'),cv=document.getElementById('cvRsi');
   const W=box.clientWidth,H=box.clientHeight-18;
+  if(!W||!H)return;
   cv.width=W;cv.height=H;cv.style.top='18px';
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
   const r=calcRSI(cs.map(c=>c.c)),n=r.length;
@@ -1357,6 +1296,7 @@ function drawMACD(){
   const cs=getView();if(!cs.length)return;
   const box=document.getElementById('macdbox'),cv=document.getElementById('cvMacd');
   const W=box.clientWidth,H=box.clientHeight-18;
+  if(!W||!H)return;
   cv.width=W;cv.height=H;cv.style.top='18px';
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
   const{m,sig,h}=calcMACD(cs.map(c=>c.c)),n=m.length;
@@ -1388,8 +1328,14 @@ function connectWS(p,tf){
       const c={t:+k.t,o:+k.o,h:+k.h,l:+k.l,c:+k.c,v:+k.v};
       const last=S.candles.at(-1);
       if(last&&last.t===c.t)S.candles[S.candles.length-1]=c;
-      else{S.candles.push(c);if(S.candles.length>500)S.candles.shift();}
-      S.prices[p]=c.c;updHeader();checkAlerts(p,c.c);renderAll();
+      else{
+        S.candles.push(c);
+        if(S.candles.length>500)S.candles.shift();
+        // Recompute cached trail on new candle
+        S._trail=calcTrail(S.candles);
+        S._pivots=calcPivots(S.candles);
+      }
+      S.prices[p]=c.c;updHeader();checkAlerts(p,c.c);scheduleRenderAll();
     };
     S.ws.onerror=()=>{};
   }catch(e){}
@@ -1427,94 +1373,154 @@ function buildTicker(){
 }
 setInterval(buildTicker,5000);
 
-// ═══ EVENTS ═══
+// ═══ EVENTS — complete rewrite ═══
 function initEvents(){
   const box=document.getElementById('mainbox');
-  const PL=70,PR=60;
 
-  // ── Wheel zoom (zoom to cursor position) ──
+  // ── Wheel: zoom toward cursor ──
   box.addEventListener('wheel',e=>{
     e.preventDefault();
     const rect=box.getBoundingClientRect();
-    const ratio=Math.max(0,Math.min(1,(e.clientX-rect.left-PL)/(rect.width-PL-PR)));
+    const chartLeft=PL,chartRight=rect.width-PR;
+    const cursorRatio=Math.max(0,Math.min(1,(e.clientX-rect.left-chartLeft)/(chartRight-chartLeft)));
     const oldVis=S.view.vis;
-    const f=e.deltaY>0?1.12:.89;
-    const newVis=Math.max(5,Math.min(S.candles.length,Math.round(oldVis*f)));
-    S.view.off=Math.max(0,Math.min(S.candles.length-newVis,S.view.off+Math.round((oldVis-newVis)*ratio)));
+    const factor=e.deltaY>0?1.10:0.91; // smoother than before
+    const newVis=Math.max(5,Math.min(S.candles.length,Math.round(oldVis*factor)));
+    if(newVis===oldVis)return;
+    // Keep the candle under cursor fixed
+    const oldOff=S.view.off;
+    const n=S.candles.length;
+    // Cursor points at candle index (from left of view): cursorRatio * oldVis
+    const cursorCandleFromRight=(1-cursorRatio)*oldVis+oldOff;
+    const newOff=Math.round(cursorCandleFromRight-(1-cursorRatio)*newVis);
     S.view.vis=newVis;
-    renderAll();
-    // Load more if zoomed out to edge
-    maybeLoadMore();
+    S.view.off=Math.max(0,Math.min(n-newVis,newOff));
+    scheduleDraw();
+    if(S.view.off>=n-newVis-5)maybeLoadMore();
   },{passive:false});
 
-  // ── POINTER EVENTS (replaces mouse + touch) ──
-  let rafId=null,startX=0,startOff=0,startDist=0,startVis=0,ptrs={};
+  // ── Pointer events for drag + pinch ──
+  const ptr=S.ptr;
 
   box.addEventListener('pointerdown',e=>{
     e.preventDefault();
     box.setPointerCapture(e.pointerId);
-    ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
-    const ids=Object.keys(ptrs);
-    if(ids.length===1){
-      // single finger / mouse — start drag
-      S.drag.on=true;startX=e.clientX;startOff=S.view.off;
+    ptr.positions[e.pointerId]={x:e.clientX,y:e.clientY};
+    ptr.ids=Object.keys(ptr.positions);
+
+    // Cancel any ongoing inertia
+    if(ptr.inertiaRaf){cancelAnimationFrame(ptr.inertiaRaf);ptr.inertiaRaf=null;}
+
+    if(ptr.ids.length===1){
+      ptr.dragging=true;
+      ptr.startX=e.clientX;
+      ptr.startOff=S.view.off;
+      ptr.lastVelX=0;
+      ptr.lastTimestamp=e.timeStamp;
       box.style.cursor='grabbing';
-    } else if(ids.length===2){
-      // two fingers — pinch zoom
-      S.drag.on=false;
-      const a=ptrs[ids[0]],b=ptrs[ids[1]];
-      startDist=Math.hypot(a.x-b.x,a.y-b.y);
-      startVis=S.view.vis;
+    } else if(ptr.ids.length===2){
+      ptr.dragging=false;
+      const [idA,idB]=ptr.ids;
+      const a=ptr.positions[idA],b=ptr.positions[idB];
+      ptr.startDist=Math.hypot(a.x-b.x,a.y-b.y)||1;
+      ptr.startVis=S.view.vis;
     }
   });
 
   box.addEventListener('pointermove',e=>{
-    ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
+    // Update position
+    ptr.positions[e.pointerId]={x:e.clientX,y:e.clientY};
+    ptr.ids=Object.keys(ptr.positions);
+
+    // Update mouse for crosshair
     const rect=box.getBoundingClientRect();
     S.mouse.x=e.clientX-rect.left;
     S.mouse.y=e.clientY-rect.top;
-    S.mouse.in=S.mouse.x>0&&S.mouse.x<rect.width&&S.mouse.y>0&&S.mouse.y<rect.height;
+    S.mouse.in=true;
 
-    const ids=Object.keys(ptrs);
-    if(ids.length>=2){
+    if(ptr.ids.length>=2){
       // Pinch zoom
-      const a=ptrs[ids[0]],b=ptrs[ids[1]];
-      const dist=Math.hypot(a.x-b.x,a.y-b.y);
-      if(startDist>0){
-        const newVis=Math.max(5,Math.min(S.candles.length,Math.round(startVis*startDist/dist)));
+      const [idA,idB]=ptr.ids;
+      const a=ptr.positions[idA],b=ptr.positions[idB];
+      const dist=Math.hypot(a.x-b.x,a.y-b.y)||1;
+      if(ptr.startDist>0){
+        const newVis=Math.max(5,Math.min(S.candles.length,Math.round(ptr.startVis*ptr.startDist/dist)));
         if(newVis!==S.view.vis){S.view.vis=newVis;}
       }
-    } else if(S.drag.on){
-      const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
-      const delta=Math.round(-(e.clientX-startX)/slotW);
-      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,startOff+delta));
-      // Load more candles when dragging to the left edge
-      if(S.view.off>=S.candles.length-S.view.vis-5) maybeLoadMore();
+    } else if(ptr.dragging){
+      const rect=box.getBoundingClientRect();
+      const chartW=rect.width-PL-PR;
+      const slotW=chartW/Math.max(1,S.view.vis);
+      const dx=e.clientX-ptr.startX;
+      const deltaCandlesFloat=-dx/slotW;
+      const newOff=Math.round(ptr.startOff+deltaCandlesFloat);
+      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,newOff));
+
+      // Velocity tracking for inertia
+      const dt=e.timeStamp-ptr.lastTimestamp;
+      if(dt>0)ptr.lastVelX=(e.clientX-ptr.startX-ptr._lastDx||0)/dt; // crude velocity
+      ptr._lastDx=dx;
+      ptr.lastTimestamp=e.timeStamp;
+
+      if(S.view.off>=S.candles.length-S.view.vis-5)maybeLoadMore();
     }
 
-    if(rafId)cancelAnimationFrame(rafId);
-    rafId=requestAnimationFrame(()=>{drawMain();drawRSI();drawMACD();});
+    scheduleDraw();
   });
 
-  const endPtr=e=>{
-    delete ptrs[e.pointerId];
-    if(Object.keys(ptrs).length===0){
-      S.drag.on=false;
-      box.style.cursor='crosshair';
+  const endPointer=e=>{
+    delete ptr.positions[e.pointerId];
+    ptr.ids=Object.keys(ptr.positions);
+
+    if(ptr.ids.length===0){
+      if(ptr.dragging){
+        ptr.dragging=false;
+        box.style.cursor='crosshair';
+        // Start inertia if there was velocity
+        startInertia();
+      }
+      ptr.startDist=0;
+    } else if(ptr.ids.length===1){
+      // Back to single touch after pinch — restart drag from current position
+      ptr.dragging=true;
+      const [idA]=ptr.ids;
+      ptr.startX=ptr.positions[idA].x;
+      ptr.startOff=S.view.off;
+      ptr.lastVelX=0;
     }
   };
-  box.addEventListener('pointerup',endPtr);
-  box.addEventListener('pointercancel',endPtr);
+
+  box.addEventListener('pointerup',endPointer);
+  box.addEventListener('pointercancel',endPointer);
   box.addEventListener('pointerleave',e=>{
     S.mouse.in=false;
-    endPtr(e);
-    drawMain();
+    scheduleDraw();
+    // Only end if this is the tracked pointer
+    if(ptr.positions[e.pointerId])endPointer(e);
   });
 
-  // ── Load more candles when scrolled to far left ──
+  // ── Inertia scroll ──
+  function startInertia(){
+    let vel=ptr.lastVelX||0;
+    const rect=document.getElementById('mainbox').getBoundingClientRect();
+    const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
+    if(Math.abs(vel)<0.05)return; // too slow, skip
+    function step(){
+      vel*=0.88; // friction
+      if(Math.abs(vel)<0.02){ptr.inertiaRaf=null;return;}
+      const delta=-vel*16/slotW; // ~16ms per frame
+      const newOff=S.view.off+delta;
+      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,Math.round(newOff)));
+      scheduleDraw();
+      ptr.inertiaRaf=requestAnimationFrame(step);
+    }
+    ptr.inertiaRaf=requestAnimationFrame(step);
+  }
+
+  // ── Async load more candles when at left edge ──
   async function maybeLoadMore(){
     if(S._loadingMore)return;
-    if(S.view.off<S.candles.length-S.view.vis-10)return;
+    if(S.view.off<S.candles.length-S.view.vis-8)return;
     S._loadingMore=true;
     try{
       const oldest=S.candles[0];
@@ -1529,25 +1535,33 @@ function initEvents(){
           S.view.off+=more.length;
           S._pivots=calcPivots(S.candles);
           S._trail=calcTrail(S.candles);
-          drawMain();drawRSI();drawMACD();
+          scheduleDraw();
         }
       }
     }catch(e){}
     S._loadingMore=false;
   }
 
-  // ── Fullscreen button ──
+  // ── Keyboard zoom shortcuts ──
+  document.addEventListener('keydown',e=>{
+    if(document.activeElement&&document.activeElement.tagName==='INPUT')return;
+    if(e.key==='+'){S.view.vis=Math.max(5,Math.round(S.view.vis*.8));scheduleDraw();}
+    if(e.key==='-'){S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.25));scheduleDraw();}
+    if(e.key==='0'){S.view.vis=Math.min(120,S.candles.length);S.view.off=0;scheduleDraw();}
+  });
+
+  // ── Fullscreen ──
   document.getElementById('btnFS').onclick=()=>{
     const el=document.getElementById('paneChart');
-    if(!document.fullscreenElement) el.requestFullscreen?.();
+    if(!document.fullscreenElement)el.requestFullscreen?.();
     else document.exitFullscreen?.();
   };
   document.addEventListener('fullscreenchange',()=>setTimeout(renderAll,100));
 
   // ── Zoom buttons ──
-  document.getElementById('btnZoomIn').onclick=()=>{S.view.vis=Math.max(5,Math.round(S.view.vis*.75));renderAll();};
-  document.getElementById('btnZoomOut').onclick=()=>{S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.33));renderAll();};
-  document.getElementById('btnZoomReset').onclick=()=>{S.view.vis=Math.min(120,S.candles.length);S.view.off=0;renderAll();};
+  document.getElementById('btnZoomIn').onclick=()=>{S.view.vis=Math.max(5,Math.round(S.view.vis*.75));scheduleDraw();};
+  document.getElementById('btnZoomOut').onclick=()=>{S.view.vis=Math.min(S.candles.length,Math.round(S.view.vis*1.33));scheduleDraw();};
+  document.getElementById('btnZoomReset').onclick=()=>{S.view.vis=Math.min(120,S.candles.length);S.view.off=0;scheduleDraw();};
 }
 
 // ═══ UTILS ═══
@@ -1571,18 +1585,20 @@ function fmtT(ts,tf){
   if(tf==='1d')return d.toLocaleDateString('en',{month:'short',day:'numeric'});
   return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
 }
-function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 
 // ═══ START ═══
-window.addEventListener('resize',()=>renderAll());
+window.addEventListener('resize',()=>scheduleRenderAll());
 buildList();
 initEvents();
 renderSigList();
+
 (async()=>{
   for(const p of PAIRS){fetchTicker(p);await new Promise(r=>setTimeout(r,80));}
   buildTicker();
-  setInterval(()=>{PAIRS.forEach(p=>fetchTicker(p));setTimeout(buildTicker,2000)},6000);
+  setInterval(()=>{PAIRS.forEach(p=>fetchTicker(p));setTimeout(buildTicker,2000);},6000);
 })();
+
 pick('BTCUSDT');
 </script>
 </body>
