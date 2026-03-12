@@ -645,12 +645,16 @@ function drawMain(){
   const ctx=cv.getContext('2d');
   ctx.clearRect(0,0,W,H);
   const n=cs.length;
-  const PL=64,PR=14,PT=14,PB=22;
+  const PL=70,PR=60,PT=18,PB=24;
   const CW=W-PL-PR,CH=H-PT-PB;
   const slot=CW/n,bw=Math.max(1.5,slot*.72-1);
   const cl=cs.map(c=>c.c);
-  const minP=Math.min(...cs.map(c=>c.l))*.9995;
-  const maxP=Math.max(...cs.map(c=>c.h))*1.0005;
+  // wider padding so TP/SL labels fit and candles always visible
+  const rawMin=Math.min(...cs.map(c=>c.l));
+  const rawMax=Math.max(...cs.map(c=>c.h));
+  const pad=(rawMax-rawMin)*0.18;
+  const minP=rawMin-pad;
+  const maxP=rawMax+pad;
   const rng=maxP-minP||1;
   const tx=i=>PL+i*slot+slot/2;
   const ty=p=>PT+CH-(p-minP)/rng*CH;
@@ -718,44 +722,58 @@ function drawMain(){
       if(!buy&&!sell)continue;
       const x=tx(i),ep=cs[i].c,mult=buy?1:-1;
 
-      // ── Arrow ──
-      const arrowCy=buy?ty(cs[i].l)-18:ty(cs[i].h)+18;
-      ctx.save();ctx.translate(x,arrowCy);if(!buy)ctx.scale(1,-1);
+      // ── Arrow (small, clean like TradingView) ──
+      const arrowY=buy?ty(cs[i].l)-6:ty(cs[i].h)+6;
+      ctx.save();
+      ctx.shadowColor=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
+      ctx.shadowBlur=8;
+      // small triangle
       ctx.beginPath();
-      ctx.moveTo(0,-11);ctx.lineTo(8,0);ctx.lineTo(4,0);
-      ctx.lineTo(4,11);ctx.lineTo(-4,11);ctx.lineTo(-4,0);
-      ctx.lineTo(-8,0);ctx.closePath();
-      ctx.fillStyle=buy?'#00e676':'#ff3a6e';
-      ctx.shadowColor=buy?'rgba(0,230,118,.7)':'rgba(255,58,110,.7)';ctx.shadowBlur=10;
-      ctx.fill();ctx.shadowBlur=0;ctx.restore();
+      if(buy){
+        ctx.moveTo(x,arrowY-10);ctx.lineTo(x+6,arrowY+2);ctx.lineTo(x-6,arrowY+2);
+      }else{
+        ctx.moveTo(x,arrowY+10);ctx.lineTo(x+6,arrowY-2);ctx.lineTo(x-6,arrowY-2);
+      }
+      ctx.closePath();
+      ctx.fillStyle=buy?'#00e676':'#ff3a6e';ctx.fill();
+      ctx.shadowBlur=0;ctx.restore();
 
-      // ── BUY/SELL label ──
-      const labelY=buy?ty(cs[i].l)-34:ty(cs[i].h)+34;
-      ctx.font='bold 10px Syne,sans-serif';ctx.textAlign='center';
-      const lw=ctx.measureText(buy?'BUY':'SELL').width+12;
-      ctx.fillStyle=buy?'rgba(0,230,118,.2)':'rgba(255,58,110,.2)';
-      rr(ctx,x-lw/2,labelY-11,lw,14,3);ctx.fill();
+      // ── BUY/SELL badge below/above arrow ──
+      const badgeY=buy?arrowY+14:arrowY-14;
+      ctx.font='bold 9px Space Mono';ctx.textAlign='center';
+      const btext=buy?'BUY':'SELL';
+      const btw=ctx.measureText(btext).width+8;
+      ctx.fillStyle=buy?'rgba(0,230,118,.25)':'rgba(255,58,110,.25)';
+      rr(ctx,x-btw/2,badgeY-9,btw,13,3);ctx.fill();
+      ctx.strokeStyle=buy?'rgba(0,230,118,.6)':'rgba(255,58,110,.6)';
+      ctx.lineWidth=.5;ctx.setLineDash([]);
+      rr(ctx,x-btw/2,badgeY-9,btw,13,3);ctx.stroke();
       ctx.fillStyle=buy?'#00e676':'#ff3a6e';
-      ctx.fillText(buy?'BUY':'SELL',x,labelY);
+      ctx.fillText(btext,x,badgeY+1);
 
-      // ── TP/SL lines ──
-      const maxBar=Math.min(n-1-i,50); // don't draw beyond visible candles
-      const endX=tx(Math.min(i+50,n-1));
-      const drawLine=(price,color,label,dash)=>{
+      // ── TP/SL lines with TradingView-style end badges ──
+      // Only draw lines that are within visible price range
+      const drawTPSL=(price,color,label,pct,dash)=>{
         const lineY=ty(price);
-        if(lineY<PT||lineY>PT+CH)return; // skip if out of range
-        ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash(dash?[5,4]:[]);
-        ctx.beginPath();ctx.moveTo(x,lineY);ctx.lineTo(endX,lineY);ctx.stroke();
+        if(lineY<PT-2||lineY>PT+CH+2)return;
+        // dashed line from signal candle to right edge
+        ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash(dash?[6,4]:[]);
+        ctx.beginPath();ctx.moveTo(x,lineY);ctx.lineTo(W-PR,lineY);ctx.stroke();
         ctx.setLineDash([]);
-        // label
-        ctx.font='bold 8px Space Mono';ctx.textAlign='left';
-        ctx.fillStyle=color;
-        ctx.fillText(label,endX+2,lineY+3);
+        // badge at right edge (TradingView style)
+        const bLabel=`${label} ${pct}%`;
+        ctx.font='bold 9px Space Mono';
+        const bw2=ctx.measureText(bLabel).width+10;
+        const bx=W-PR+2,by=lineY-9,bh=16;
+        ctx.fillStyle=label==='SL'?'rgba(255,58,110,.85)':'rgba(0,180,100,.85)';
+        rr(ctx,bx,by,bw2,bh,3);ctx.fill();
+        ctx.fillStyle='#fff';ctx.textAlign='left';
+        ctx.fillText(bLabel,bx+5,lineY+4);
       };
       TP.forEach((t,idx)=>{
-        drawLine(ep*(1+mult*t/100),'rgba(0,230,118,.6)',`TP${idx+1}`,true);
+        drawTPSL(ep*(1+mult*t/100),'rgba(0,230,118,.55)',`TP${idx+1}`,t,true);
       });
-      drawLine(ep*(1-mult*SL_PCT/100),'rgba(255,58,110,.8)','SL',true);
+      drawTPSL(ep*(1-mult*SL_PCT/100),'rgba(255,58,110,.7)','SL',SL_PCT,true);
     }
   }
 
@@ -779,9 +797,14 @@ function drawMain(){
   ctx.strokeStyle='rgba(0,229,255,.4)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
   ctx.beginPath();ctx.moveTo(PL,lpy);ctx.lineTo(W-PR,lpy);ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle='#00e5ff';ctx.fillRect(W-PR,lpy-8,PR+1,16);
-  ctx.fillStyle='#080b10';ctx.font='bold 8px Space Mono';ctx.textAlign='center';
-  ctx.fillText(fmt(lp),W-PR/2,lpy+3);
+  // price badge on right axis
+  const priceTxt=fmt(lp);
+  ctx.font='bold 9px Space Mono';
+  const ptw=ctx.measureText(priceTxt).width+10;
+  ctx.fillStyle='#00e5ff';
+  rr(ctx,W-PR+2,lpy-9,ptw,16,3);ctx.fill();
+  ctx.fillStyle='#080b10';ctx.textAlign='left';
+  ctx.fillText(priceTxt,W-PR+7,lpy+4);
 
   // Crosshair
   if(S.mouse.in){
