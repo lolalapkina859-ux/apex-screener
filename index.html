@@ -824,6 +824,9 @@ function updOhlc(c){
 function renderAll(){
   const cv=getView();if(!cv.length)return;
   updOhlc(cv[cv.length-1]);
+  // Cache expensive calculations for drawMain to reuse
+  S._pivots=calcPivots(S.candles);
+  S._trail=calcTrail(S.candles);
   drawMain();drawRSI();drawMACD();
   const res=smartSig(S.candles);
   const prevSig=S.sigs[S.pair];
@@ -920,9 +923,9 @@ function drawMain(){
     de(20,'#ffd54f');de(50,'#ff7043');
   }
 
-  // ── PIVOT ZONES (Support / Resistance) ──
+  // ── PIVOT ZONES (Support / Resistance) — use cached value ──
   {
-    const {ph,pl}=calcPivots(cs);
+    const {ph,pl}=S._pivots||{ph:null,pl:null};
     const drawZone=(price,color,label)=>{
       if(!price)return;
       const y=ty(price);
@@ -940,7 +943,12 @@ function drawMain(){
 
   // Smart Trail + arrows + TP/SL lines
   if(S.ind.trail){
-    const tr=calcTrail(cs);
+    // Use cached full trail, slice to visible view range
+    const fullTrail=S._trail||calcTrail(S.candles);
+    const totalN=S.candles.length;
+    const vis=S.view.vis,off=S.view.off;
+    const startIdx=totalN-vis-off;
+    const tr=fullTrail.slice(startIdx,startIdx+n);
     // Trail line
     ctx.lineWidth=2;ctx.setLineDash([]);
     for(let i=1;i<n;i++){
@@ -1252,21 +1260,31 @@ function initEvents(){
   },{passive:false});
 
   box.addEventListener('mousedown',e=>{
+    e.preventDefault();
     S.drag.on=true;S.drag.x0=e.clientX;S.drag.off0=S.view.off;
     box.style.cursor='grabbing';
   });
+
+  let rafId=null;
   window.addEventListener('mousemove',e=>{
     const rect=box.getBoundingClientRect();
-    S.mouse.x=e.clientX-rect.left;S.mouse.y=e.clientY-rect.top;
+    S.mouse.x=e.clientX-rect.left;
+    S.mouse.y=e.clientY-rect.top;
     S.mouse.in=S.mouse.x>0&&S.mouse.x<rect.width&&S.mouse.y>0&&S.mouse.y<rect.height;
+
     if(S.drag.on){
       const PL=70,PR=60;
       const slotW=(rect.width-PL-PR)/Math.max(1,S.view.vis);
       const delta=Math.round(-(e.clientX-S.drag.x0)/slotW);
-      S.view.off=Math.max(0,Math.min(S.candles.length-S.view.vis,S.drag.off0+delta));
-      renderAll();
+      const newOff=Math.max(0,Math.min(S.candles.length-S.view.vis,S.drag.off0+delta));
+      if(newOff!==S.view.off){
+        S.view.off=newOff;
+        if(rafId)cancelAnimationFrame(rafId);
+        rafId=requestAnimationFrame(()=>{ drawMain();drawRSI();drawMACD(); });
+      }
     } else {
-      drawMain();
+      if(rafId)cancelAnimationFrame(rafId);
+      rafId=requestAnimationFrame(()=>drawMain());
     }
   });
   window.addEventListener('mouseup',()=>{S.drag.on=false;box.style.cursor='crosshair'});
