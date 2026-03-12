@@ -153,6 +153,31 @@ canvas{display:block;position:absolute;left:0}
 <body>
 <div id="toastwrap"></div>
 
+<!-- SETTINGS MODAL -->
+<div id="modalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;align-items:center;justify-content:center">
+  <div style="background:#0d1117;border:1px solid #1e2a38;border-radius:10px;padding:24px;width:340px;font-family:'Space Mono',monospace">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#00e5ff;margin-bottom:16px;letter-spacing:2px">⚙️ SMART SIGNAL PRO</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
+      <label style="color:#4a6070">💵 Баланс (USDT)
+        <input id="cfgBalance" type="number" min="10" step="10" value="100"
+          style="width:100%;margin-top:4px;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 8px;font-family:inherit;font-size:12px;outline:none;border-radius:3px">
+      </label>
+      <label style="color:#4a6070">🎯 Sensitivity (Trail)
+        <input id="cfgSens" type="number" min="1" max="20" step="0.5" value="5"
+          style="width:100%;margin-top:4px;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 8px;font-family:inherit;font-size:12px;outline:none;border-radius:3px">
+      </label>
+      <label style="color:#4a6070">📊 ATR Period
+        <input id="cfgAtr" type="number" min="3" max="30" step="1" value="10"
+          style="width:100%;margin-top:4px;background:#111820;border:1px solid #1e2a38;color:#c8d8e8;padding:6px 8px;font-family:inherit;font-size:12px;outline:none;border-radius:3px">
+      </label>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="applySettings()" style="flex:1;padding:9px;background:#00e5ff;color:#050d14;border:none;font-family:inherit;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer">ПРИМЕНИТЬ</button>
+        <button onclick="closeSettings()" style="flex:1;padding:9px;background:transparent;color:#4a6070;border:1px solid #1e2a38;font-family:inherit;font-size:12px;border-radius:4px;cursor:pointer">ОТМЕНА</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="topbar">
   <div class="logo">APEX<span>X</span></div>
   <div class="live-dot"></div>
@@ -199,6 +224,7 @@ canvas{display:block;position:absolute;left:0}
           <button class="ibtn" id="btnZoomOut"   title="Отдалить">🔍−</button>
           <button class="ibtn" id="btnZoomReset" title="Сбросить зум">⊡</button>
           <button class="ibtn" id="btnFS"        title="Полный экран">⛶</button>
+          <button class="ibtn" id="btnSettings"  title="Настройки сигнала" onclick="openSettings()">⚙️ SSP</button>
         </div>
       </div>
       <div class="cwrap">
@@ -223,7 +249,7 @@ canvas{display:block;position:absolute;left:0}
         <span class="sig-count-label" id="sigCountLabel">0 сигналов</span>
       </div>
       <div class="sig-thead">
-        <span>ПАРА</span><span>ТИП</span><span>ЦЕНА</span><span>ЗВЁЗДЫ</span><span>P&L</span>
+        <span>ПАРА</span><span>ТИП</span><span>ЦЕНА</span><span>ПОЗИЦИЯ</span><span>P&L / TP</span>
       </div>
       <div class="sig-list" id="sigList">
         <div class="sig-empty" id="sigEmpty">
@@ -273,7 +299,45 @@ const PAIRS=[
   'ENAUSDT','NEARUSDT','HYPEUSDT'
 ];
 const TF_LIM={'1m':150,'5m':150,'15m':120,'1h':120,'4h':100,'1d':80};
-const TP=[3.5,5.0,7.0,11.0]; const SL_PCT=8.0;
+const TP=[3.5,5.0,7.0,11.0]; const SL_PCT=8.5;
+const USER_BALANCE_DEFAULT=100; // USDT, можно изменить
+
+// ═══ ACTIVE TRADES TRACKER ═══
+// {pair: {side, sl, tp4, tp1, tp2, tp3, entry, status:'active'|'tp1'|'tp2'|'tp3'|'tp4'|'sl'}}
+const activeTrades={};
+
+// ═══ PIVOT ZONES ═══
+function calcPivots(cs,len=5){
+  let lastPH=null,lastPL=null;
+  for(let i=len;i<cs.length-len;i++){
+    let isHigh=true,isLow=true;
+    for(let j=i-len;j<=i+len;j++){
+      if(j===i)continue;
+      if(cs[j].h>=cs[i].h)isHigh=false;
+      if(cs[j].l<=cs[i].l)isLow=false;
+    }
+    if(isHigh)lastPH=cs[i].h;
+    if(isLow) lastPL=cs[i].l;
+  }
+  return{ph:lastPH,pl:lastPL};
+}
+
+// ═══ POSITION SIZE ═══
+function calcPosition(entry,sl,balance){
+  const risk=balance*0.03; // 3% риска
+  const dist=Math.abs(entry-sl);
+  if(!dist)return{tokens:0,value:0};
+  const tokens=risk/dist;
+  return{tokens,value:tokens*entry};
+}
+
+// ═══ PRESETS ═══
+const PRESETS={
+  'Нет':       {sens:5, atr:10},
+  'Scalper':   {sens:2, atr:5},
+  'Swing Trader': {sens:8, atr:14},
+  'Trend Trader': {sens:5, atr:10}
+};
 
 // ═══ STATE ═══
 const S={
@@ -284,8 +348,20 @@ const S={
   drag:{on:false,x0:0,off0:0},
   mouse:{x:0,y:0,in:false},
   ws:null,wob:null,ob:{asks:[],bids:[]},
-  signals:[],  // {pair,type,price,stars,quality,time,currentPrice}
-  sigFilter:'all'
+  signals:[],
+  sigFilter:'all',
+  // Smart Signal Pro settings
+  cfg:{
+    preset:'Trend Trader',
+    sens:5,
+    atrPeriod:10,
+    showQuality:true,
+    sessions:false,
+    sigInSession:false,
+    nyFrom:'13:00',nyTo:'22:00',
+    ldFrom:'07:00',ldTo:'16:00',
+    balance:100,
+  }
 };
 
 // ═══ MATH ═══
@@ -310,8 +386,9 @@ function calcATR(cs,p=10){
   }
   return o;
 }
-function calcTrail(cs,sens=5){
-  const a=calcATR(cs);
+function calcTrail(cs,sens,atrP){
+  sens=sens||S.cfg.sens;atrP=atrP||S.cfg.atrPeriod;
+  const a=calcATR(cs,atrP);
   const t=new Array(cs.length).fill(null);
   for(let i=0;i<cs.length;i++){
     const src=cs[i].c,nL=(a[i]||0)*sens;
@@ -348,19 +425,38 @@ function calcBB(d,p=20,mul=2){
     return{u:mean+mul*std,m:mean,l:mean-mul*std};
   });
 }
+function inSession(ts){
+  if(!S.cfg.sessions)return true;
+  const d=new Date(ts);
+  const hm=d.getUTCHours()*60+d.getUTCMinutes();
+  const parse=s=>{const[h,m]=s.split(':').map(Number);return h*60+m;};
+  const nyF=parse(S.cfg.nyFrom),nyT=parse(S.cfg.nyTo);
+  const ldF=parse(S.cfg.ldFrom),ldT=parse(S.cfg.ldTo);
+  return(hm>=nyF&&hm<=nyT)||(hm>=ldF&&hm<=ldT);
+}
 function smartSig(cs){
-  if(cs.length<30)return{sig:'NEUTRAL',stars:'☆☆☆☆',bpct:.5,trail:null,rsiV:50,macdV:null,buy:false,sell:false};
-  const cl=cs.map(c=>c.c),tr=calcTrail(cs),r=calcRSI(cl),{m:md,sig:sg}=calcMACD(cl),a=calcATR(cs);
+  if(cs.length<30)return{sig:'NEUTRAL',stars:'☆☆☆☆',bpct:.5,trail:null,rsiV:50,macdV:null,buy:false,sell:false,quality:1,ph:null,pl:null};
+  const cl=cs.map(c=>c.c),tr=calcTrail(cs),r=calcRSI(cl),{m:md,sig:sg}=calcMACD(cl),a=calcATR(cs,S.cfg.atrPeriod);
   const i=cs.length-1;
   const src=cl[i],t=tr[i],tp=tr[i-1],sp=cl[i-1];
-  const buy=sp<=tp&&src>t,sell=sp>=tp&&src<t;
+  let buy=sp<=tp&&src>t,sell=sp>=tp&&src<t;
+  if(S.cfg.sessions&&S.cfg.sigInSession){if(!inSession(cs[i].t)){buy=false;sell=false;}}
+
+  // ── AI Classifier (same logic as Python bot) ──
   const vols=cs.slice(-21).map(c=>c.v);
   const vma=vols.slice(0,-1).reduce((a,b)=>a+b,0)/20;
   const vs=vols[20]>vma*2?2:vols[20]>vma*1.5?1:0;
   const ama=a.filter(v=>v!=null).slice(-20).reduce((a,b)=>a+b,0)/20;
-  const as=(a[i]||0)>ama?1:0;
-  const q=Math.min(vs+as+1,4);
-  const stars='★'.repeat(q)+'☆'.repeat(4-q);
+  const atrScore=(a[i]||0)>ama?1:0;
+
+  // Pivot zone score (from Python: close within 2% of pivot)
+  const {ph,pl}=calcPivots(cs);
+  let zoneScore=0;
+  if(buy  && pl && Math.abs(src-pl)/src<0.02) zoneScore=1;
+  if(sell && ph && Math.abs(src-ph)/src<0.02) zoneScore=1;
+
+  const q=Math.min(vs+atrScore+zoneScore+1,4);
+  const stars=S.cfg.showQuality?('★'.repeat(q)+'☆'.repeat(4-q)):'';
   let bull=0,bear=0;
   if(src>t)bull+=2;else bear+=2;
   const lr=r[i];if(lr<40)bull+=2;else if(lr>60)bear+=2;
@@ -368,7 +464,7 @@ function smartSig(cs){
   const bpct=bull/(bull+bear);
   let sig=bpct>.6?'BUY':bpct<.4?'SELL':'NEUTRAL';
   if(buy)sig='BUY';if(sell)sig='SELL';
-  return{sig,stars,bpct,trail:t,rsiV:lr,macdV:md[i],buy,sell,quality:q};
+  return{sig,stars,bpct,trail:t,rsiV:lr,macdV:md[i],buy,sell,quality:q,ph,pl};
 }
 
 // ═══ VIEW ═══
@@ -449,16 +545,33 @@ function setSigFilter(f,btn){
 function clearSignals(){
   S.signals=[];renderSigList();
 }
-function addSignal(pair,type,price,stars,quality){
-  // avoid duplicate within 1 minute
+function addSignal(pair,type,price,stars,quality,ph,pl){
   const now=Date.now();
   const recent=S.signals.find(s=>s.pair===pair&&s.type===type&&now-s.time<60000);
   if(recent)return;
-  S.signals.unshift({pair,type,price,stars,quality,time:now,entryPrice:price,id:now});
+
+  const mult=type==='BUY'?1:-1;
+  const sl  =price*(1-mult*SL_PCT/100);
+  const tp1 =price*(1+mult*TP[0]/100);
+  const tp2 =price*(1+mult*TP[1]/100);
+  const tp3 =price*(1+mult*TP[2]/100);
+  const tp4 =price*(1+mult*TP[3]/100);
+  const bal =S.cfg.balance||USER_BALANCE_DEFAULT;
+  const pos =calcPosition(price,sl,bal);
+
+  const sig={pair,type,price,stars,quality,time:now,entryPrice:price,id:now,
+    sl,tp1,tp2,tp3,tp4,ph,pl,
+    posTokens:pos.tokens,posValue:pos.value,
+    pnl:null,status:'active',hitTp:0};
+
+  S.signals.unshift(sig);
   if(S.signals.length>100)S.signals.pop();
+
+  // Register in active trades tracker
+  activeTrades[pair]={side:type,sl,tp1,tp2,tp3,tp4,entry:price,hitTp:0};
+
   renderSigList();
-  showToast(pair,type,price,stars,quality);
-  // badge
+  showToast(sig);
   const b=document.getElementById('sigBadge');
   const activeTab=document.querySelector('.atab.on');
   if(!activeTab||!activeTab.textContent.includes('СИГНАЛ')){
@@ -466,47 +579,128 @@ function addSignal(pair,type,price,stars,quality){
   }
 }
 function updSigPnl(pair,currentPrice){
+  // Check active trade TP/SL hits
+  const at=activeTrades[pair];
+  if(at){
+    if(at.side==='BUY'){
+      if(currentPrice>=at.tp4){at.hitTp=4;at.closed=true;}
+      else if(currentPrice>=at.tp3&&at.hitTp<3){at.hitTp=3;notifyTPHit(pair,3,currentPrice);}
+      else if(currentPrice>=at.tp2&&at.hitTp<2){at.hitTp=2;notifyTPHit(pair,2,currentPrice);}
+      else if(currentPrice>=at.tp1&&at.hitTp<1){at.hitTp=1;notifyTPHit(pair,1,currentPrice);}
+      if(currentPrice<=at.sl&&!at.closed){at.closed=true;notifySLHit(pair,currentPrice);}
+    } else {
+      if(currentPrice<=at.tp4){at.hitTp=4;at.closed=true;}
+      else if(currentPrice<=at.tp3&&at.hitTp<3){at.hitTp=3;notifyTPHit(pair,3,currentPrice);}
+      else if(currentPrice<=at.tp2&&at.hitTp<2){at.hitTp=2;notifyTPHit(pair,2,currentPrice);}
+      else if(currentPrice<=at.tp1&&at.hitTp<1){at.hitTp=1;notifyTPHit(pair,1,currentPrice);}
+      if(currentPrice>=at.sl&&!at.closed){at.closed=true;notifySLHit(pair,currentPrice);}
+    }
+    if(at.closed)delete activeTrades[pair];
+  }
+
   S.signals.filter(s=>s.pair===pair).forEach(s=>{
     s.currentPrice=currentPrice;
     const pct=(currentPrice-s.entryPrice)/s.entryPrice*100*(s.type==='SELL'?-1:1);
     s.pnl=pct;
-  });
-  // re-render only pnl cells without full redraw
-  S.signals.forEach(s=>{
-    if(s.pair!==pair)return;
+    // update hitTp status
+    if(activeTrades[pair]) s.hitTp=activeTrades[pair].hitTp||0;
     const el=document.getElementById(`spnl-${s.id}`);
     if(!el)return;
-    if(s.pnl==null){el.textContent='—';el.className='si-pnl neu';return;}
     el.textContent=(s.pnl>=0?'+':'')+s.pnl.toFixed(2)+'%';
-    el.className='si-pnl '+(s.pnl>0?'pos':s.pnl<0?'neg':'neu');
+    el.className='si-pnl '+(s.pnl>0.1?'pos':s.pnl<-0.1?'neg':'neu');
   });
+}
+function notifyTPHit(pair,tpN,price){
+  const pct=TP[tpN-1];
+  const div=document.createElement('div');
+  div.className='toast BUY';
+  div.innerHTML=`<span class="toast-x" onclick="this.parentElement.remove()">✕</span>
+    <div class="toast-emoji">🎯</div>
+    <div class="toast-title" style="color:var(--green)">TP${tpN} ДОСТИГНУТ!</div>
+    <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
+    <div class="toast-detail">+${pct}% → ${fmt(price)}</div>
+    <div class="toast-bar"></div>`;
+  document.getElementById('toastwrap').prepend(div);
+  playBeep('BUY');
+  setTimeout(()=>{div.style.animation='tout .35s ease forwards';setTimeout(()=>div.remove(),350);},4000);
+}
+function notifySLHit(pair,price){
+  const div=document.createElement('div');
+  div.className='toast SELL';
+  div.innerHTML=`<span class="toast-x" onclick="this.parentElement.remove()">✕</span>
+    <div class="toast-emoji">🛑</div>
+    <div class="toast-title" style="color:var(--red)">СТОП-ЛОСС</div>
+    <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
+    <div class="toast-detail">SL сработал → ${fmt(price)}</div>
+    <div class="toast-bar"></div>`;
+  document.getElementById('toastwrap').prepend(div);
+  playBeep('SELL');
+  setTimeout(()=>{div.style.animation='tout .35s ease forwards';setTimeout(()=>div.remove(),350);},4000);
 }
 function renderSigList(){
   const list=document.getElementById('sigList');
-  const empty=document.getElementById('sigEmpty');
   let filtered=S.signals;
   if(sigFilter==='buy')filtered=S.signals.filter(s=>s.type==='BUY');
   else if(sigFilter==='sell')filtered=S.signals.filter(s=>s.type==='SELL');
   set('sigCountLabel',filtered.length+' сигналов');
   if(!filtered.length){
     list.innerHTML='';
-    list.appendChild(document.getElementById('sigEmpty')||createEmpty());
-    document.getElementById('sigEmpty').style.display='flex';
-    return;
+    const emp=document.getElementById('sigEmpty')||createEmpty();
+    if(!list.contains(emp))list.appendChild(emp);
+    emp.style.display='flex';return;
   }
-  document.getElementById('sigEmpty').style.display='none';
+  const emp=document.getElementById('sigEmpty');
+  if(emp)emp.style.display='none';
+
   list.innerHTML=filtered.map((s,idx)=>{
     const ago=fmtAgo(s.time);
     const pnlStr=s.pnl!=null?(s.pnl>=0?'+':'')+s.pnl.toFixed(2)+'%':'—';
-    const pnlCls=s.pnl>0?'pos':s.pnl<0?'neg':'neu';
+    const pnlCls=s.pnl>0.1?'pos':s.pnl<-0.1?'neg':'neu';
+    const posStr=s.posValue?`${s.posValue.toFixed(1)}$`:'—';
+    const tokStr=s.posTokens?`${fmtTokens(s.posTokens)}`:'';
+    const tpDots=[1,2,3,4].map(n=>`<span style="color:${(s.hitTp||0)>=n?'var(--green)':'var(--border)'}">●</span>`).join('');
+    const slHit=s.pnl!=null&&s.pnl<-SL_PCT*0.9;
     return`<div class="sig-item${idx===0&&Date.now()-s.time<3000?' fresh':''}" onclick="pick('${s.pair}')">
-      <div><div class="si-pair">${s.pair.replace('USDT','/USDT')}</div><div class="si-time">${ago}</div></div>
+      <div>
+        <div class="si-pair">${s.pair.replace('USDT','/USDT')} <span style="color:var(--gold);font-size:9px">${s.stars||''}</span></div>
+        <div class="si-time">${ago}</div>
+      </div>
       <div><span class="si-type ${s.type}">${s.type}</span></div>
-      <div class="si-price">${fmt(s.entryPrice)}</div>
-      <div class="si-stars">${s.stars}</div>
-      <div class="si-pnl ${pnlCls}" id="spnl-${s.id}">${pnlStr}</div>
+      <div>
+        <div class="si-price">${fmt(s.entryPrice)}</div>
+        <div style="font-size:9px;color:var(--muted)">SL:${fmt(s.sl)}</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--accent)">${posStr}</div>
+        <div style="font-size:9px;color:var(--muted)">${tokStr}</div>
+      </div>
+      <div>
+        <div class="si-pnl ${slHit?'neg':pnlCls}" id="spnl-${s.id}">${slHit?'🛑 SL':pnlStr}</div>
+        <div style="font-size:11px;letter-spacing:1px;margin-top:2px">${tpDots}</div>
+      </div>
     </div>`;
   }).join('');
+}
+function fmtTokens(n){
+  if(n>=1000)return n.toFixed(0);
+  if(n>=1)return n.toFixed(2);
+  if(n>=0.01)return n.toFixed(4);
+  return n.toFixed(6);
+}
+function openSettings(){
+  document.getElementById('cfgBalance').value=S.cfg.balance||100;
+  document.getElementById('cfgSens').value=S.cfg.sens||5;
+  document.getElementById('cfgAtr').value=S.cfg.atrPeriod||10;
+  const m=document.getElementById('modalOverlay');
+  m.style.display='flex';
+}
+function closeSettings(){document.getElementById('modalOverlay').style.display='none';}
+function applySettings(){
+  S.cfg.balance=+document.getElementById('cfgBalance').value||100;
+  S.cfg.sens=+document.getElementById('cfgSens').value||5;
+  S.cfg.atrPeriod=+document.getElementById('cfgAtr').value||10;
+  closeSettings();
+  renderAll();
 }
 function createEmpty(){
   const d=document.createElement('div');d.className='sig-empty';d.id='sigEmpty';
@@ -525,33 +719,42 @@ const TOAST_MSGS={
   BUY:['🚀 ЛЕТИМ В ЛОНГ!','🔥 BUY СИГНАЛ!','💚 ЗЕЛЁНЫЙ СВЕТ!','⬆️ ПОКУПАЕМ!','🎯 ТОЧКА ВХОДА!'],
   SELL:['🔴 ШОРТ СИГНАЛ!','📉 ПРОДАЁМ!','⬇️ В ШОРТ!','🩸 МЕДВЕДИ РУЛЯТ','🎯 ТОЧКА ВХОДА ШОРТ']
 };
-function showToast(pair,type,price,stars,quality){
+function showToast(sig){
+  const{pair,type,entryPrice,stars,quality,sl,tp1,tp2,tp3,tp4,posValue,posTokens,ph,pl}=sig;
   const wrap=document.getElementById('toastwrap');
   const msgs=TOAST_MSGS[type];
   const title=msgs[Math.floor(Math.random()*msgs.length)];
   const div=document.createElement('div');
   div.className=`toast ${type}`;
+  const zoneStr=type==='BUY'
+    ?(pl?`📐 Поддержка: ${fmt(pl)}`:'')
+    :(ph?`📐 Сопротивление: ${fmt(ph)}`:'');
+  const posStr=posValue?`💵 Позиция: <b>${posValue.toFixed(1)} USDT</b> (${fmtTokens(posTokens)} монет)`:'' ;
   div.innerHTML=`
     <span class="toast-x" onclick="this.parentElement.remove()">✕</span>
-    <div class="toast-emoji">${type==='BUY'?'🚀':'📉'}</div>
-    <div class="toast-title">${title}</div>
-    <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
-    <div class="toast-detail">Цена входа: <b>${fmt(price)}</b><br>
-      TP1: ${fmt(price*(1+(type==='BUY'?1:-1)*TP[0]/100))} &nbsp;
-      TP2: ${fmt(price*(1+(type==='BUY'?1:-1)*TP[1]/100))}<br>
-      SL: ${fmt(price*(1-(type==='BUY'?1:-1)*SL_PCT/100))}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="font-size:24px">${type==='BUY'?'🚀':'📉'}</div>
+      <div>
+        <div class="toast-title">${title}</div>
+        <div class="toast-pair">${pair.replace('USDT','/USDT')}</div>
+      </div>
+      <div class="toast-stars" style="margin-left:auto">${stars}</div>
     </div>
-    <div class="toast-stars">${stars}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:11px;line-height:1.7">
+      <span style="color:var(--muted)">Вход:</span><span><b>${fmt(entryPrice)}</b></span>
+      <span style="color:var(--red)">SL (${SL_PCT}%):</span><span style="color:var(--red)">${fmt(sl)}</span>
+      <span style="color:var(--green)">TP1 (${TP[0]}%):</span><span style="color:var(--green)">${fmt(tp1)}</span>
+      <span style="color:var(--green)">TP2 (${TP[1]}%):</span><span style="color:var(--green)">${fmt(tp2)}</span>
+      <span style="color:var(--green)">TP3 (${TP[2]}%):</span><span style="color:var(--green)">${fmt(tp3)}</span>
+      <span style="color:var(--gold)">TP4 (${TP[3]}%):</span><span style="color:var(--gold)">${fmt(tp4)}</span>
+    </div>
+    ${zoneStr?`<div style="font-size:10px;color:var(--muted);margin-top:5px">${zoneStr}</div>`:''}
+    ${posStr?`<div style="font-size:10px;margin-top:4px">${posStr}</div>`:''}
     <div class="toast-bar"></div>`;
   div.onclick=e=>{if(!e.target.classList.contains('toast-x')){pick(pair);switchTab('chart',document.querySelectorAll('.atab')[0]);}};
   wrap.prepend(div);
-  // sound
   playBeep(type);
-  // auto remove
-  setTimeout(()=>{
-    div.style.animation='tout .35s ease forwards';
-    setTimeout(()=>div.remove(),350);
-  },5000);
+  setTimeout(()=>{div.style.animation='tout .35s ease forwards';setTimeout(()=>div.remove(),350);},7000);
 }
 function playBeep(type){
   try{
@@ -627,7 +830,7 @@ function renderAll(){
   S.sigs[S.pair]=res.sig;updRow(S.pair);
   // fire signal event if new crossover
   if((res.buy||res.sell)&&res.sig!=='NEUTRAL'&&prevSig!==res.sig){
-    addSignal(S.pair,res.sig,S.candles.at(-1).c,res.stars,res.quality);
+    addSignal(S.pair,res.sig,S.candles.at(-1).c,res.stars,res.quality,res.ph,res.pl);
   }
   const rsiEl=document.getElementById('rRsi');
   rsiEl.textContent=res.rsiV.toFixed(1);
@@ -662,21 +865,10 @@ function drawMain(){
   const slot=CW/n,bw=Math.max(1.5,slot*.72-1);
   const cl=cs.map(c=>c.c);
 
-  // Compute TP/SL levels for last signal to include in price range
-  const tr0=calcTrail(cs);
-  let tpslMin=Infinity,tpslMax=-Infinity;
-  for(let i=1;i<cs.length;i++){
-    if(tr0[i]==null||tr0[i-1]==null)continue;
-    const buy0=cs[i-1].c<=tr0[i-1]&&cs[i].c>tr0[i];
-    const sell0=cs[i-1].c>=tr0[i-1]&&cs[i].c<tr0[i];
-    if(!buy0&&!sell0)continue;
-    const ep0=cs[i].c,mult0=buy0?1:-1;
-    TP.forEach(t=>{const p=ep0*(1+mult0*t/100);tpslMin=Math.min(tpslMin,p);tpslMax=Math.max(tpslMax,p);});
-    const slp=ep0*(1-mult0*SL_PCT/100);tpslMin=Math.min(tpslMin,slp);tpslMax=Math.max(tpslMax,slp);
-  }
-  const rawMin=Math.min(...cs.map(c=>c.l),tpslMin===Infinity?Infinity:tpslMin);
-  const rawMax=Math.max(...cs.map(c=>c.h),tpslMax===-Infinity?-Infinity:tpslMax);
-  const pad=(rawMax-rawMin)*0.06;
+  // Price range based ONLY on candles — no TP/SL distortion
+  const rawMin=Math.min(...cs.map(c=>c.l));
+  const rawMax=Math.max(...cs.map(c=>c.h));
+  const pad=(rawMax-rawMin)*0.08;
   const minP=rawMin-pad;
   const maxP=rawMax+pad;
   const rng=maxP-minP||1;
@@ -728,6 +920,24 @@ function drawMain(){
     de(20,'#ffd54f');de(50,'#ff7043');
   }
 
+  // ── PIVOT ZONES (Support / Resistance) ──
+  {
+    const {ph,pl}=calcPivots(cs);
+    const drawZone=(price,color,label)=>{
+      if(!price)return;
+      const y=ty(price);
+      if(y<PT-2||y>PT+CH+2)return;
+      ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,6]);
+      ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font='bold 8px Space Mono';ctx.textAlign='right';
+      ctx.fillStyle=color;
+      ctx.fillText(label,PL-2,y-2);
+    };
+    drawZone(ph,'rgba(255,100,80,.55)','R');
+    drawZone(pl,'rgba(80,200,120,.55)','S');
+  }
+
   // Smart Trail + arrows + TP/SL lines
   if(S.ind.trail){
     const tr=calcTrail(cs);
@@ -738,75 +948,84 @@ function drawMain(){
       ctx.strokeStyle=cs[i].c>tr[i]?'rgba(0,230,118,.75)':'rgba(255,58,110,.75)';
       ctx.beginPath();ctx.moveTo(tx(i-1),ty(tr[i-1]));ctx.lineTo(tx(i),ty(tr[i]));ctx.stroke();
     }
-    // Signals
+
+    // Find ALL signals in visible range, draw flags; find LAST signal for TP/SL
+    let lastSigIdx=-1,lastSigBuy=false;
     for(let i=1;i<n;i++){
       if(tr[i]==null||tr[i-1]==null)continue;
       const buy=cs[i-1].c<=tr[i-1]&&cs[i].c>tr[i];
       const sell=cs[i-1].c>=tr[i-1]&&cs[i].c<tr[i];
       if(!buy&&!sell)continue;
-      const x=tx(i),ep=cs[i].c,mult=buy?1:-1;
+      lastSigIdx=i;lastSigBuy=buy;
 
-      // ── FLAG PIN (TradingView style) ──
-      const pinX=x;
-      const pinBaseY=buy?ty(cs[i].l):ty(cs[i].h);
-      const pinDir=buy?1:-1; // 1=up from bottom, -1=down from top
+      const x=tx(i);
       const pinColor=buy?'#00e676':'#ff3a6e';
       const pinGlow=buy?'rgba(0,230,118,.5)':'rgba(255,58,110,.5)';
+      const pinBaseY=buy?ty(cs[i].l):ty(cs[i].h);
+      const pinDir=buy?1:-1;
       const flagLabel=buy?'BUY':'SELL';
 
       ctx.save();
       ctx.shadowColor=pinGlow;ctx.shadowBlur=12;
 
-      // vertical stem
-      const stemLen=28;
+      // stem
+      const stemLen=26;
       const stemTopY=pinBaseY-pinDir*stemLen;
       ctx.strokeStyle=pinColor;ctx.lineWidth=2;ctx.setLineDash([]);
-      ctx.beginPath();ctx.moveTo(pinX,pinBaseY-pinDir*2);ctx.lineTo(pinX,stemTopY);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,pinBaseY-pinDir*3);ctx.lineTo(x,stemTopY);ctx.stroke();
 
-      // circle at base
-      ctx.beginPath();ctx.arc(pinX,pinBaseY-pinDir*2,4,0,Math.PI*2);
+      // dot at candle
+      ctx.beginPath();ctx.arc(x,pinBaseY-pinDir*3,4,0,Math.PI*2);
       ctx.fillStyle=pinColor;ctx.fill();
 
-      // flag rectangle
+      // flag
       ctx.font='bold 10px Space Mono';
       const fw=ctx.measureText(flagLabel).width+14;
       const fh=16;
-      const fx=pinX+2;
+      const fx=x-fw/2; // center flag over stem
       const fy=buy?stemTopY-fh:stemTopY;
       ctx.fillStyle=pinColor;
       rr(ctx,fx,fy,fw,fh,3);ctx.fill();
-
-      // flag text
       ctx.shadowBlur=0;
-      ctx.fillStyle=buy?'#001a09':'#1a0009';
-      ctx.textAlign='left';ctx.font='bold 10px Space Mono';
-      ctx.fillText(flagLabel,fx+7,fy+fh/2+4);
-
+      ctx.fillStyle=buy?'#001408':'#150006';
+      ctx.textAlign='center';ctx.font='bold 10px Space Mono';
+      ctx.fillText(flagLabel,x,fy+fh/2+4);
       ctx.restore();
+    }
 
-      // ── TP/SL lines with TradingView-style end badges ──
-      // Only draw lines that are within visible price range
-      const drawTPSL=(price,color,label,pct,dash)=>{
+    // TP/SL only from LAST signal
+    if(lastSigIdx>=0){
+      const ep=cs[lastSigIdx].c;
+      const mult=lastSigBuy?1:-1;
+      const sigX=tx(lastSigIdx);
+
+      const drawTPSL=(price,color,label,pct)=>{
         const lineY=ty(price);
-        if(lineY<PT-2||lineY>PT+CH+2)return;
-        // dashed line from signal candle to right edge
-        ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash(dash?[6,4]:[]);
-        ctx.beginPath();ctx.moveTo(x,lineY);ctx.lineTo(W-PR,lineY);ctx.stroke();
-        ctx.setLineDash([]);
-        // badge at right edge (TradingView style)
-        const bLabel=`${label} ${pct}%`;
-        ctx.font='bold 9px Space Mono';
-        const bw2=ctx.measureText(bLabel).width+10;
-        const bx=W-PR+2,by=lineY-9,bh=16;
-        ctx.fillStyle=label==='SL'?'rgba(255,58,110,.85)':'rgba(0,180,100,.85)';
-        rr(ctx,bx,by,bw2,bh,3);ctx.fill();
-        ctx.fillStyle='#fff';ctx.textAlign='left';
-        ctx.fillText(bLabel,bx+5,lineY+4);
+        // clamp label visibility but still draw line even if partially off
+        ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([6,4]);
+        ctx.beginPath();
+        ctx.moveTo(sigX,Math.max(PT,Math.min(PT+CH,lineY)));
+        ctx.lineTo(W-PR,Math.max(PT,Math.min(PT+CH,lineY)));
+        ctx.stroke();ctx.setLineDash([]);
+
+        // only draw badge if line is within visible range
+        if(lineY>=PT-2&&lineY<=PT+CH+2){
+          const bLabel=`${label} ${pct}%`;
+          ctx.font='bold 9px Space Mono';
+          const bw2=ctx.measureText(bLabel).width+10;
+          const bx=W-PR+2;
+          const by=lineY-8;
+          ctx.fillStyle=label==='SL'?'#c0132a':'#00783a';
+          rr(ctx,bx,by,bw2,16,3);ctx.fill();
+          ctx.fillStyle='#fff';ctx.textAlign='left';
+          ctx.fillText(bLabel,bx+5,lineY+4);
+        }
       };
+
       TP.forEach((t,idx)=>{
-        drawTPSL(ep*(1+mult*t/100),'rgba(0,230,118,.55)',`TP${idx+1}`,t,true);
+        drawTPSL(ep*(1+mult*t/100),'rgba(0,230,118,.6)',`TP${idx+1}`,t);
       });
-      drawTPSL(ep*(1-mult*SL_PCT/100),'rgba(255,58,110,.7)','SL',SL_PCT,true);
+      drawTPSL(ep*(1-mult*SL_PCT/100),'rgba(255,58,110,.75)','SL',SL_PCT);
     }
   }
 
@@ -820,43 +1039,92 @@ function drawMain(){
     ctx.fillRect(x-bw/2,Math.min(oy,cy2),bw,Math.max(1.5,Math.abs(cy2-oy)));
   });
 
+  // ── RIGHT PRICE AXIS (TradingView style) ──
+  // Background strip
+  ctx.fillStyle='rgba(8,11,16,.92)';
+  ctx.fillRect(W-PR,PT,PR,CH);
+
+  // Separator line
+  ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=1;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(W-PR,PT);ctx.lineTo(W-PR,PT+CH);ctx.stroke();
+
+  // Price ticks — ~8 evenly spaced labels
+  ctx.font='10px Space Mono';ctx.textAlign='left';ctx.fillStyle='#5a7080';
+  const tickCount=7;
+  for(let i=0;i<=tickCount;i++){
+    const price=minP+rng*(i/tickCount);
+    const y=ty(price);
+    if(y<PT+4||y>PT+CH-4)continue;
+    // tick mark
+    ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=.5;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(W-PR,y);ctx.lineTo(W-PR+4,y);ctx.stroke();
+    // label
+    ctx.fillStyle='#5a7080';
+    ctx.fillText(fmt(price),W-PR+7,y+4);
+  }
+
   // Time axis
   const step=Math.max(1,Math.ceil(n/8));
   ctx.fillStyle='#4a6070';ctx.font='9px Space Mono';ctx.textAlign='center';ctx.setLineDash([]);
   for(let i=0;i<n;i+=step)ctx.fillText(fmtT(cs[i].t,S.tf),tx(i),H-5);
 
-  // Current price line
+  // ── CURRENT PRICE badge (cyan, like TradingView) ──
   const lp=cs[n-1].c,lpy=ty(lp);
-  ctx.strokeStyle='rgba(0,229,255,.4)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  const isUp=(cs[n-1].c>=(cs[n-2]?.c||cs[n-1].c));
+  // dashed line across chart
+  ctx.strokeStyle='rgba(0,229,255,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
   ctx.beginPath();ctx.moveTo(PL,lpy);ctx.lineTo(W-PR,lpy);ctx.stroke();
   ctx.setLineDash([]);
-  // price badge on right axis
-  const priceTxt=fmt(lp);
-  ctx.font='bold 9px Space Mono';
-  const ptw=ctx.measureText(priceTxt).width+10;
+  // badge
+  const lpTxt=fmt(lp);
+  ctx.font='bold 10px Space Mono';
+  const lpTw=ctx.measureText(lpTxt).width;
+  const badgeW=Math.max(lpTw+16, PR-2);
+  const badgeX=W-PR+1;
+  const badgeY=lpy-9;
   ctx.fillStyle='#00e5ff';
-  rr(ctx,W-PR+2,lpy-9,ptw,16,3);ctx.fill();
-  ctx.fillStyle='#080b10';ctx.textAlign='left';
-  ctx.fillText(priceTxt,W-PR+7,lpy+4);
+  rr(ctx,badgeX,badgeY,badgeW,18,3);ctx.fill();
+  ctx.fillStyle='#050d14';ctx.textAlign='left';
+  ctx.fillText(lpTxt,badgeX+(badgeW-lpTw)/2,lpy+5);
 
-  // Crosshair
+  // ── CROSSHAIR ──
   if(S.mouse.in){
     const mx=S.mouse.x,my=S.mouse.y;
     if(mx>PL&&mx<W-PR&&my>PT&&my<PT+CH){
-      ctx.strokeStyle='rgba(200,216,232,.2)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+      // crosshair lines
+      ctx.strokeStyle='rgba(200,216,232,.18)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
       ctx.beginPath();ctx.moveTo(mx,PT);ctx.lineTo(mx,PT+CH);ctx.stroke();
       ctx.beginPath();ctx.moveTo(PL,my);ctx.lineTo(W-PR,my);ctx.stroke();
       ctx.setLineDash([]);
+
+      // LEFT price label
       const hp=maxP-(my-PT)/CH*rng;
-      ctx.fillStyle='#131c28';ctx.fillRect(1,my-9,PL-5,18);
+      ctx.fillStyle='#1a2535';ctx.fillRect(1,my-9,PL-4,18);
+      ctx.strokeStyle='rgba(30,42,56,.8)';ctx.lineWidth=.5;
+      ctx.strokeRect(1,my-9,PL-4,18);
       ctx.fillStyle='#c8d8e8';ctx.font='9px Space Mono';ctx.textAlign='right';
-      ctx.fillText(fmt(hp),PL-5,my+3);
+      ctx.fillText(fmt(hp),PL-5,my+4);
+
+      // RIGHT price badge on axis (grey, like TradingView cursor price)
+      const hpTxt=fmt(hp);
+      ctx.font='bold 10px Space Mono';
+      const hpTw=ctx.measureText(hpTxt).width;
+      const cbW=Math.max(hpTw+16,PR-2);
+      ctx.fillStyle='#2a3a4a';
+      rr(ctx,W-PR+1,my-9,cbW,18,3);ctx.fill();
+      ctx.strokeStyle='rgba(100,140,170,.4)';ctx.lineWidth=.5;
+      rr(ctx,W-PR+1,my-9,cbW,18,3);ctx.stroke();
+      ctx.fillStyle='#c8d8e8';ctx.textAlign='left';
+      ctx.fillText(hpTxt,W-PR+1+(cbW-hpTw)/2,my+5);
+
+      // bottom time label
       const ci=Math.min(n-1,Math.max(0,Math.floor((mx-PL)/slot)));
       const tl=fmtT(cs[ci].t,S.tf);
-      const tw=ctx.measureText(tl).width+8;
-      ctx.fillStyle='#131c28';ctx.fillRect(mx-tw/2,PT+CH+2,tw,14);
+      const tw=ctx.measureText(tl).width+10;
+      ctx.fillStyle='#1a2535';
+      rr(ctx,mx-tw/2,PT+CH+2,tw,15,3);ctx.fill();
       ctx.fillStyle='#c8d8e8';ctx.textAlign='center';ctx.font='9px Space Mono';
-      ctx.fillText(tl,mx,PT+CH+12);
+      ctx.fillText(tl,mx,PT+CH+13);
       updOhlc(cs[ci]);
     }
   }
