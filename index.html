@@ -572,7 +572,11 @@ let state = {
   orderbook: { asks:[], bids:[] },
   charts: { main: null, rsi: null, macd: null },
   ws: null,
-  wsOB: null
+  wsOB: null,
+  // viewport: how many candles visible and offset from right
+  view: { visibleCount: 80, offsetFromRight: 0 },
+  drag: { active: false, startX: 0, startOffset: 0 },
+  crosshair: { x: -1, y: -1, visible: false }
 };
 
 // ========== INIT ==========
@@ -713,6 +717,7 @@ function toggleInd(ind) {
 async function loadChart() {
   try {
     state.candles = await fetchKlines(state.pair, state.tf);
+    resetView();
     updateOHLC(state.candles[state.candles.length-1]);
     renderMainChart();
     renderRSI();
@@ -735,8 +740,17 @@ function updateOHLC(c) {
   `;
 }
 
+function getViewCandles() {
+  const all = state.candles;
+  const total = all.length;
+  const vis = Math.max(10, Math.min(state.view.visibleCount, total));
+  const off = Math.max(0, Math.min(state.view.offsetFromRight, total - vis));
+  const start = total - vis - off;
+  return all.slice(Math.max(0, start), total - off);
+}
+
 function renderMainChart() {
-  const candles = state.candles;
+  const candles = getViewCandles();
   if (!candles.length) return;
   const wrap = document.getElementById('mainChartWrap');
   const canvas = document.getElementById('mainChart');
@@ -754,12 +768,13 @@ function renderMainChart() {
   const minP = Math.min(...allPrices) * 0.999;
   const maxP = Math.max(...allPrices) * 1.001;
 
-  const padL = 60, padR = 10, padT = 12, padB = 20;
+  const padL = 65, padR = 12, padT = 12, padB = 22;
   const W = canvas.width - padL - padR;
   const H = canvas.height - padT - padB;
-  const candleW = Math.max(2, Math.floor(W / n) - 1);
+  const slotW = W / n;
+  const candleW = Math.max(1, Math.floor(slotW * 0.7));
 
-  const toX = i => padL + i * (W / n) + (W / n) / 2;
+  const toX = i => padL + i * slotW + slotW / 2;
   const toY = p => padT + H - ((p - minP) / (maxP - minP)) * H;
 
   // Grid
@@ -863,7 +878,7 @@ function renderMainChart() {
   });
 
   // Time axis
-  const step = Math.ceil(n / 8);
+  const step = Math.max(1, Math.ceil(n / 8));
   ctx.fillStyle = '#4a6070'; ctx.font = '9px Space Mono'; ctx.textAlign = 'center';
   for (let i = 0; i < n; i += step) {
     ctx.fillText(fmtTime(candles[i].t, state.tf), toX(i), canvas.height - 5);
@@ -872,17 +887,51 @@ function renderMainChart() {
   // Current price line
   const lastC = candles[n-1].c;
   const lineY = toY(lastC);
-  ctx.strokeStyle = 'rgba(0,229,255,0.6)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+  ctx.strokeStyle = 'rgba(0,229,255,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
   ctx.beginPath(); ctx.moveTo(padL, lineY); ctx.lineTo(canvas.width - padR, lineY); ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = 'var(--accent)';
-  ctx.fillRect(canvas.width - padR, lineY - 7, padR + 2, 14);
+  // Price label on right axis
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillRect(canvas.width - padR - 1, lineY - 8, padR + 2, 16);
   ctx.fillStyle = '#080b10'; ctx.font = 'bold 8px Space Mono'; ctx.textAlign = 'center';
   ctx.fillText(fmt(lastC), canvas.width - padR/2, lineY + 3);
+
+  // ── CROSSHAIR ──
+  if (state.crosshair.visible) {
+    const cx = state.crosshair.x;
+    const cy = state.crosshair.y;
+
+    ctx.strokeStyle = 'rgba(200,216,232,0.25)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, padT + H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padL, cy); ctx.lineTo(canvas.width - padR, cy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Price label on Y axis
+    const hoverPrice = maxP - ((cy - padT) / H) * (maxP - minP);
+    ctx.fillStyle = '#1e2a38';
+    ctx.fillRect(0, cy - 9, padL - 3, 18);
+    ctx.fillStyle = '#c8d8e8'; ctx.font = '9px Space Mono'; ctx.textAlign = 'right';
+    ctx.fillText(fmt(hoverPrice), padL - 5, cy + 3);
+
+    // Time label on X axis
+    const hoverIdx = Math.round((cx - padL) / slotW - 0.5);
+    if (hoverIdx >= 0 && hoverIdx < n) {
+      const label = fmtTime(candles[hoverIdx].t, state.tf);
+      const lw = ctx.measureText(label).width + 8;
+      ctx.fillStyle = '#1e2a38';
+      ctx.fillRect(cx - lw/2, padT + H + 3, lw, 14);
+      ctx.fillStyle = '#c8d8e8'; ctx.textAlign = 'center'; ctx.font = '9px Space Mono';
+      ctx.fillText(label, cx, padT + H + 12);
+
+      // OHLCV tooltip popup
+      const c = candles[hoverIdx];
+      updateOHLC(c);
+    }
+  }
 }
 
 function renderRSI() {
-  const candles = state.candles;
+  const candles = getViewCandles();
   if (!candles.length) return;
   const wrap = document.getElementById('rsiWrap');
   const canvas = document.getElementById('rsiChart');
@@ -930,7 +979,7 @@ function renderRSI() {
 }
 
 function renderMACD() {
-  const candles = state.candles;
+  const candles = getViewCandles();
   if (!candles.length) return;
   const wrap = document.getElementById('macdWrap');
   const canvas = document.getElementById('macdChart');
@@ -1164,8 +1213,118 @@ function fmtTime(ts, tf) {
 // ========== RESIZE ==========
 window.addEventListener('resize', ()=>{ renderMainChart(); renderRSI(); renderMACD(); });
 
+// ========== CHART INTERACTIONS ==========
+function initChartEvents() {
+  const canvas = document.getElementById('mainChart');
+  const wrap = document.getElementById('mainChartWrap');
+
+  // ── WHEEL ZOOM ──
+  wrap.addEventListener('wheel', e => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY > 0 ? 1.12 : 0.89;
+    const total = state.candles.length;
+    let vis = Math.round(state.view.visibleCount * zoomFactor);
+    vis = Math.max(10, Math.min(total, vis));
+    state.view.visibleCount = vis;
+    renderMainChart(); renderRSI(); renderMACD();
+  }, { passive: false });
+
+  // ── DRAG SCROLL ──
+  wrap.addEventListener('mousedown', e => {
+    state.drag.active = true;
+    state.drag.startX = e.clientX;
+    state.drag.startOffset = state.view.offsetFromRight;
+    wrap.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!state.candles.length) return;
+    const rect = wrap.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // crosshair
+    state.crosshair.x = mx;
+    state.crosshair.y = my;
+    state.crosshair.visible = mx > 65 && mx < rect.width - 12 && my > 12 && my < rect.height - 22;
+    renderMainChart();
+
+    // drag
+    if (!state.drag.active) return;
+    const dx = e.clientX - state.drag.startX;
+    const total = state.candles.length;
+    const slotW = (rect.width - 77) / state.view.visibleCount;
+    const candlesDragged = Math.round(-dx / slotW);
+    let newOffset = state.drag.startOffset + candlesDragged;
+    newOffset = Math.max(0, Math.min(total - state.view.visibleCount, newOffset));
+    state.view.offsetFromRight = newOffset;
+    renderMainChart(); renderRSI(); renderMACD();
+  });
+
+  window.addEventListener('mouseup', () => {
+    state.drag.active = false;
+    document.getElementById('mainChartWrap').style.cursor = 'crosshair';
+  });
+
+  wrap.addEventListener('mouseleave', () => {
+    state.crosshair.visible = false;
+    renderMainChart();
+  });
+
+  // ── TOUCH SUPPORT ──
+  let lastTouchX = 0, lastPinchDist = 0;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      lastTouchX = e.touches[0].clientX;
+      state.drag.startOffset = state.view.offsetFromRight;
+    }
+    if (e.touches.length === 2) {
+      lastPinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 1) {
+      const dx = e.touches[0].clientX - lastTouchX;
+      const rect = wrap.getBoundingClientRect();
+      const slotW = (rect.width - 77) / state.view.visibleCount;
+      const delta = Math.round(-dx / slotW);
+      const total = state.candles.length;
+      let newOff = state.drag.startOffset + delta;
+      newOff = Math.max(0, Math.min(total - state.view.visibleCount, newOff));
+      state.view.offsetFromRight = newOff;
+      renderMainChart();
+    }
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = lastPinchDist / dist;
+      lastPinchDist = dist;
+      const total = state.candles.length;
+      let vis = Math.round(state.view.visibleCount * factor);
+      vis = Math.max(10, Math.min(total, vis));
+      state.view.visibleCount = vis;
+      renderMainChart();
+    }
+  }, { passive: true });
+
+  wrap.style.cursor = 'crosshair';
+}
+
+// Reset viewport when loading new pair/tf
+function resetView() {
+  state.view.offsetFromRight = 0;
+  state.view.visibleCount = Math.min(80, state.candles.length);
+}
+
 // ========== START ==========
 init();
+initChartEvents();
 </script>
 </body>
 </html>
